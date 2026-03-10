@@ -28,39 +28,41 @@ def transpose_score_to_c_or_a(score):
     except:
         return score
 
-def extract_seed_from_midi(midi_path, note_to_int):
-    try:
-        score = converter.parse(midi_path)
-        score = transpose_score_to_c_or_a(score)
-        extracted = []
+def extract_seed_from_midi(midi_path_1, midi_path_2, note_to_int):
+    midi_files = [midi_path_1, midi_path_2]
+    for path in midi_files:
+        try:
+            score = converter.parse(path)
+            score = transpose_score_to_c_or_a(score)
+            extracted = []
 
-        for element in score.flatten().notesAndRests:
-            duration = quantize(element.duration.quarterLength)
-            if duration <= 0: continue
+            for element in score.flatten().notesAndRests:
+                duration = quantize(element.duration.quarterLength)
+                if duration <= 0: continue
 
-            if isinstance(element, note.Note):
-                tag = f"{element.pitch}_{duration}"
-            elif isinstance(element, chord.Chord):
-                pitches = ".".join(str(p) for p in sorted(element.pitches))
-                tag = f"{pitches}_{duration}"
-            elif isinstance(element, note.Rest) and duration >= 0.5:
-                tag = f"rest_{duration}"
-            else:
-                continue
-            extracted.append(tag)
+                if isinstance(element, note.Note):
+                    tag = f"{element.pitch}_{duration}"
+                elif isinstance(element, chord.Chord):
+                    pitches = ".".join(str(p) for p in sorted(element.pitches))
+                    tag = f"{pitches}_{duration}"
+                elif isinstance(element, note.Rest) and duration >= 0.5:
+                    tag = f"rest_{duration}"
+                else:
+                    continue
+                extracted.append(tag)
 
-        # Filter out notes not in the model's vocabulary
-        extracted = [n for n in extracted if n in note_to_int]
+            # Filter out notes not in the model's vocabulary
+            extracted = [n for n in extracted if n in note_to_int]
 
-        if len(extracted) < SEQUENCE_LENGTH:
-            print(f"Seed file too short ({len(extracted)} notes). Need {SEQUENCE_LENGTH}.")
+            if len(extracted) < SEQUENCE_LENGTH:
+                print(f"Seed file too short ({len(extracted)} notes). Need {SEQUENCE_LENGTH}.")
+                return None
+
+            start = np.random.randint(0, len(extracted) - SEQUENCE_LENGTH)
+            return [note_to_int[n] for n in extracted[start:start + SEQUENCE_LENGTH]]
+        except Exception as e:
+            print(f"Failed to extract seed: {e}")
             return None
-
-        start = np.random.randint(0, len(extracted) - SEQUENCE_LENGTH)
-        return [note_to_int[n] for n in extracted[start:start + SEQUENCE_LENGTH]]
-    except Exception as e:
-        print(f"Failed to extract seed: {e}")
-        return None
 
 # --- 3. GENERATION LOGIC ---
 def sample_with_temp(preds, temperature=0.5):
@@ -73,15 +75,17 @@ def sample_with_temp(preds, temperature=0.5):
     probas = np.random.multinomial(1, preds, 1)
     return np.argmax(probas)
 
-def generate_song(model, note_to_int, int_to_note, seed_file_path, num_notes, temperature):
+def generate_song(model, note_to_int, int_to_note, seed_file_path_1, seed_file_path_2, num_notes, temperature):
     pattern = None
-    if seed_file_path and os.path.exists(seed_file_path):
-        print(f"Extracting seed from: {os.path.basename(seed_file_path)}")
-        pattern = extract_seed_from_midi(seed_file_path, note_to_int)
+    if seed_file_path_1 and seed_file_path_2 and os.path.exists(seed_file_path_1) and os.path.exists(seed_file_path_2):
+        print(f"Extracting seed from: {os.path.basename(seed_file_path_1)}")
+        pattern = extract_seed_from_midi(seed_file_path_1, seed_file_path_2, note_to_int)
     
     if pattern is None:
         print("Using random seed instead...")
         pattern = list(np.random.randint(0, len(note_to_int), SEQUENCE_LENGTH))
+        print("Generated random seed pattern:", pattern)
+
 
     prediction_output = []
     print("Generating notes...")
@@ -106,6 +110,7 @@ def generate_song(model, note_to_int, int_to_note, seed_file_path, num_notes, te
 def convert_to_midi(prediction_output, output_path):
     output_stream = stream.Stream()
     offset = 0
+    score = 
     for pattern in prediction_output:
         try:
             parts = pattern.split('_')
@@ -151,13 +156,17 @@ def run():
     os.makedirs(out_folder, exist_ok=True)
 
     # Path to your local MIDI seed
-    seed_file = os.path.join(BASE, "Jerry_Lee_Lewis_-_Great_Balls_of_Fire.mid")
+    seed_file_1 = os.path.join(BASE, "Jerry_Lee_Lewis_-_Great_Balls_of_Fire.mid")
+    seed_file_2 = os.path.join(BASE, "lady_gaga-judas.mid")
     
-    notes = generate_song(model, n2i, i2n, seed_file, 400, 0.5)
+    notes = generate_song(model, n2i, i2n, seed_file_1,seed_file_2, 400, 1)
     
     output_file = os.path.join(out_folder, "composition.mid")
     convert_to_midi(notes, output_file)
     print(f"\nSUCCESS! Saved to: {output_file}")
+
+
+
 
 if __name__ == "__main__":
     run()
