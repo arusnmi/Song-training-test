@@ -52,14 +52,22 @@ class RecommendationEngine:
         ]
         
         available_features = [col for col in feature_cols if col in self.music_df.columns]
-        
-        # Create feature matrix, aligned with user_item_matrix columns (track_ids)
-        feature_data = self.music_df.set_index('track_id')[available_features]
-        feature_data = feature_data.fillna(0)
-        
-        # Align with user_item_matrix columns
-        self.song_features_matrix = feature_data.loc[self.user_item_matrix.columns].fillna(0)
-        
+
+        if not available_features:
+            # Keep content-based pipeline alive even if feature columns are absent.
+            self.song_features_matrix = pd.DataFrame(
+                0.0,
+                index=self.user_item_matrix.columns,
+                columns=['fallback_feature']
+            )
+        else:
+            # Create feature matrix, aligned with user_item_matrix columns (track_ids).
+            feature_data = self.music_df.set_index('track_id')[available_features].fillna(0)
+
+            # Use reindex instead of loc so missing track_ids are filled with zeros
+            # instead of raising KeyError when listening history has extra tracks.
+            self.song_features_matrix = feature_data.reindex(self.user_item_matrix.columns).fillna(0)
+
         # Normalize features
         scaler = StandardScaler()
         self.song_features_normalized = scaler.fit_transform(self.song_features_matrix)
