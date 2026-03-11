@@ -519,6 +519,8 @@ elif page == "Analytics Dashboard":
         msg = "❌ Analytics engine not initialized."
         if load_error:
             msg += f" (Load error: {load_error})"
+        st.error(msg)
+    else:
         st.subheader("📊 Dataset Statistics")
 
         col1, col2, col3, col4 = st.columns(4)
@@ -532,6 +534,34 @@ elif page == "Analytics Dashboard":
         with col4:
             sparsity = (1 - len(rec_engine.listening_df) / (len(rec_engine.get_all_user_ids()) * len(rec_engine.music_df))) * 100
             st.metric("🔍 Sparsity", f"{sparsity:.1f}%")
+
+        st.write("---")
+
+        # Always-available chart from listening history.
+        st.subheader("🔥 Most Played Tracks (Top 15)")
+        top_tracks = (
+            rec_engine.listening_df.groupby('track_id', as_index=False)['playcount']
+            .sum()
+            .sort_values('playcount', ascending=False)
+            .head(15)
+        )
+        top_tracks = top_tracks.merge(
+            rec_engine.music_df[['track_id', 'name']],
+            on='track_id',
+            how='left'
+        )
+        top_tracks['label'] = top_tracks['name'].fillna(top_tracks['track_id'])
+
+        fig = px.bar(
+            top_tracks,
+            x='playcount',
+            y='label',
+            orientation='h',
+            title='Top 15 Tracks by Total Playcount',
+            labels={'playcount': 'Total Playcount', 'label': 'Track'}
+        )
+        fig.update_layout(height=500, showlegend=False, yaxis={'categoryorder': 'total ascending'})
+        st.plotly_chart(fig, use_container_width=True)
 
         st.write("---")
 
@@ -550,6 +580,8 @@ elif page == "Analytics Dashboard":
             )
             fig.update_layout(height=500, showlegend=False)
             st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("Genre column not available in music metadata.")
 
         st.write("---")
 
@@ -565,19 +597,17 @@ elif page == "Analytics Dashboard":
                 key="feature_select"
             )
 
-            if selected_feature in rec_engine.music_df.columns:
-                feature_data = rec_engine.music_df[selected_feature].dropna()
-
-                fig = px.histogram(
-                    x=feature_data,
-                    nbins=30,
-                    title=f'Distribution of {selected_feature.title()}',
-                    labels={'x': selected_feature.title(), 'count': 'Frequency'},
-                    color_discrete_sequence=['#7b5cff']
-                )
-                fig.update_layout(showlegend=False, height=400)
-                st.plotly_chart(fig, use_container_width=True)
-                st.write("**Sample User Recommendations Quality**")
-                st.dataframe(quality_df, use_container_width=True)
+            feature_data = rec_engine.music_df[selected_feature].dropna()
+            fig = px.histogram(
+                x=feature_data,
+                nbins=30,
+                title=f'Distribution of {selected_feature.title()}',
+                labels={'x': selected_feature.title(), 'count': 'Frequency'},
+                color_discrete_sequence=['#7b5cff']
+            )
+            fig.update_layout(showlegend=False, height=400)
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("No audio feature columns found for distribution charts.")
 
 
