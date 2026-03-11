@@ -519,88 +519,65 @@ elif page == "Analytics Dashboard":
         msg = "❌ Analytics engine not initialized."
         if load_error:
             msg += f" (Load error: {load_error})"
-        st.error(msg)
-    else:
-        st.subheader("🎵 Track Insights")
+        st.subheader("📊 Dataset Statistics")
 
-        if not sample_feedback:
-            st.info("No track insights available from the listening history CSV.")
-        else:
-            filter_col1, filter_col2 = st.columns(2)
+        col1, col2, col3, col4 = st.columns(4)
 
-            with filter_col1:
-                selected_track = st.selectbox(
-                    "Select Track",
-                    list(sample_feedback.keys()),
-                    format_func=lambda x: f"{sample_feedback[x]['name']} - {sample_feedback[x]['artist']}"
-                )
+        with col1:
+            st.metric("👥 Total Users", f"{len(rec_engine.get_all_user_ids()):,}")
+        with col2:
+            st.metric("🎵 Total Songs", f"{len(rec_engine.music_df):,}")
+        with col3:
+            st.metric("📊 Total Listens", f"{len(rec_engine.listening_df):,}")
+        with col4:
+            sparsity = (1 - len(rec_engine.listening_df) / (len(rec_engine.get_all_user_ids()) * len(rec_engine.music_df))) * 100
+            st.metric("🔍 Sparsity", f"{sparsity:.1f}%")
 
-            with filter_col2:
-                min_rating = st.select_slider(
-                    "Filter by Rating Range",
-                    options=[1, 2, 3, 4, 5],
-                    value=(1, 5),
-                    key="rating_filter"
-                )
+        st.write("---")
 
-            st.write("---")
-
-            track_data = sample_feedback[selected_track]
-            ratings = track_data['ratings']
-            filtered_ratings = [r for r in ratings if min_rating[0] <= r <= min_rating[1]]
-
-            header_col1, header_col2 = st.columns([2, 1])
-            with header_col1:
-                st.write(f"### 🎵 {track_data['name']}")
-                st.write(f"**Artist:** {track_data['artist']}")
-            with header_col2:
-                avg_rating = np.mean(filtered_ratings) if filtered_ratings else 0
-                st.metric("⭐ Avg Rating", f"{avg_rating:.1f}/5", delta=f"{len(filtered_ratings)} ratings")
-
-            st.write("---")
-            st.subheader("📊 Rating Distribution")
-
-            if filtered_ratings:
-                rating_counts = pd.Series(filtered_ratings).value_counts().sort_index()
-                colors_list = ['#ff4d4d', '#ff9999', '#ffff99', '#99ff99', '#4dff4d']
-
-                fig = px.pie(
-                    values=rating_counts.values,
-                    names=[f"⭐ {i} Star" for i in rating_counts.index],
-                    title=f'Rating Distribution for {track_data["name"]}',
-                    color_discrete_sequence=colors_list
-                )
-                fig.update_layout(height=400)
-                st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.info("No ratings found in the selected range for this track.")
-
-            st.write("---")
-            st.subheader("🏆 Top-Rated Tracks")
-
-            top_tracks_data = []
-            for track_id, track_info in sample_feedback.items():
-                avg_track_rating = np.mean(track_info['ratings']) if track_info['ratings'] else 0
-                top_tracks_data.append({
-                    'Track': track_info['name'],
-                    'Artist': track_info['artist'],
-                    'Avg Rating': avg_track_rating,
-                    'Ratings Count': len(track_info['ratings'])
-                })
-
-            top_tracks_df = pd.DataFrame(top_tracks_data).sort_values('Avg Rating', ascending=False).head(15)
+        st.subheader("🎼 Genre Distribution (Top 15)")
+        if 'genre' in rec_engine.music_df.columns:
+            genre_counts = rec_engine.music_df['genre'].value_counts().head(15)
 
             fig = px.bar(
-                top_tracks_df,
-                x='Track',
-                y='Avg Rating',
-                color='Avg Rating',
-                color_continuous_scale='RdYlGn',
-                title='Top-Rated Tracks by Average Score',
-                labels={'Avg Rating': 'Average Rating (out of 5)', 'Track': 'Track Name'},
-                hover_data=['Artist', 'Ratings Count']
+                x=genre_counts.values,
+                y=genre_counts.index,
+                orientation='h',
+                title='Top 15 Genres by Count',
+                labels={'x': 'Number of Songs', 'y': 'Genre'},
+                color=genre_counts.values,
+                color_continuous_scale='Viridis'
             )
-            fig.update_layout(height=400, xaxis_tickangle=-45)
+            fig.update_layout(height=500, showlegend=False)
             st.plotly_chart(fig, use_container_width=True)
+
+        st.write("---")
+
+        st.subheader("🎚️ Audio Feature Distributions")
+
+        feature_cols = ['energy', 'valence', 'danceability', 'acousticness']
+        available_cols = [col for col in feature_cols if col in rec_engine.music_df.columns]
+
+        if available_cols:
+            selected_feature = st.selectbox(
+                "Select feature to visualize",
+                available_cols,
+                key="feature_select"
+            )
+
+            if selected_feature in rec_engine.music_df.columns:
+                feature_data = rec_engine.music_df[selected_feature].dropna()
+
+                fig = px.histogram(
+                    x=feature_data,
+                    nbins=30,
+                    title=f'Distribution of {selected_feature.title()}',
+                    labels={'x': selected_feature.title(), 'count': 'Frequency'},
+                    color_discrete_sequence=['#7b5cff']
+                )
+                fig.update_layout(showlegend=False, height=400)
+                st.plotly_chart(fig, use_container_width=True)
+                st.write("**Sample User Recommendations Quality**")
+                st.dataframe(quality_df, use_container_width=True)
 
 
