@@ -521,176 +521,49 @@ elif page == "Analytics Dashboard":
             msg += f" (Load error: {load_error})"
         st.error(msg)
     else:
-        # Using tabs for different analytics views
-        analytics_tab1, analytics_tab2, analytics_tab3, analytics_tab4 = st.tabs(
-            ["📈 Dataset Overview", "⭐ Feedback & Ratings", "🎭 Mood Analytics", "🎵 Recommendations Insights"]
-        )
-        
-        # ==========================================
-        # TAB 1: DATASET OVERVIEW
-        # ==========================================
-        with analytics_tab1:
-            st.subheader("📊 Dataset Statistics")
-            
-            col1, col2, col3, col4 = st.columns(4)
-            
-            with col1:
-                st.metric("👥 Total Users", f"{len(rec_engine.get_all_user_ids()):,}")
-            with col2:
-                st.metric("🎵 Total Songs", f"{len(rec_engine.music_df):,}")
-            with col3:
-                st.metric("📊 Total Listens", f"{len(rec_engine.listening_df):,}")
-            with col4:
-                sparsity = (1 - len(rec_engine.listening_df) / (len(rec_engine.get_all_user_ids()) * len(rec_engine.music_df))) * 100
-                st.metric("🔍 Sparsity", f"{sparsity:.1f}%")
-            
-            st.write("---")
-            
-            # Genre distribution with Plotly
-            st.subheader("🎼 Genre Distribution (Top 15)")
-            if 'genre' in rec_engine.music_df.columns:
-                genre_counts = rec_engine.music_df['genre'].value_counts().head(15)
-                
-                fig = px.bar(
-                    x=genre_counts.values,
-                    y=genre_counts.index,
-                    orientation='h',
-                    title='Top 15 Genres by Count',
-                    labels={'x': 'Number of Songs', 'y': 'Genre'},
-                    color=genre_counts.values,
-                    color_continuous_scale='Viridis'
+        st.subheader("🎵 Track Insights")
+
+        if not sample_feedback:
+            st.info("No track insights available from the listening history CSV.")
+        else:
+            filter_col1, filter_col2 = st.columns(2)
+
+            with filter_col1:
+                selected_track = st.selectbox(
+                    "Select Track",
+                    list(sample_feedback.keys()),
+                    format_func=lambda x: f"{sample_feedback[x]['name']} - {sample_feedback[x]['artist']}"
                 )
-                fig.update_layout(height=500, showlegend=False)
-                st.plotly_chart(fig, use_container_width=True)
-            
-            st.write("---")
-            
-            # Feature distribution
-            st.subheader("🎚️ Audio Feature Distributions")
-            
-            feature_cols = ['energy', 'valence', 'danceability', 'acousticness']
-            available_cols = [col for col in feature_cols if col in rec_engine.music_df.columns]
-            
-            if available_cols:
-                selected_feature = st.selectbox(
-                    "Select feature to visualize",
-                    available_cols,
-                    key="feature_select"
+
+            with filter_col2:
+                min_rating = st.select_slider(
+                    "Filter by Rating Range",
+                    options=[1, 2, 3, 4, 5],
+                    value=(1, 5),
+                    key="rating_filter"
                 )
-                
-                if selected_feature in rec_engine.music_df.columns:
-                    feature_data = rec_engine.music_df[selected_feature].dropna()
-                    
-                    fig = px.histogram(
-                        x=feature_data,
-                        nbins=30,
-                        title=f'Distribution of {selected_feature.title()}',
-                        labels={'x': selected_feature.title(), 'count': 'Frequency'},
-                        color_discrete_sequence=['#7b5cff']
-                    )
-                    fig.update_layout(showlegend=False, height=400)
-                    st.plotly_chart(fig, use_container_width=True)
-        
-        # ==========================================
-        # TAB 2: FEEDBACK & RATINGS DASHBOARD
-        # ==========================================
-        with analytics_tab2:
-            st.subheader("⭐ User Feedback & Rating Analysis")
-            
-            # if there is no feedback data derived from listening history, show message
-            if not sample_feedback:
-                st.info("No feedback data available from the listening history CSV.")
-            else:
-                # Sidebar filters
-                st.write("### 🔍 Filter Options")
-                
-                filter_col1, filter_col2 = st.columns(2)
-                
-                with filter_col1:
-                    selected_track = st.selectbox(
-                        "Filter by Track",
-                        list(sample_feedback.keys()),
-                        format_func=lambda x: f"{sample_feedback[x]['name']} - {sample_feedback[x]['artist']}"
-                    )
-                
-                with filter_col2:
-                    min_rating = st.select_slider(
-                        "Filter by Minimum Rating",
-                        options=[1, 2, 3, 4, 5],
-                        value=(1, 5),
-                        key="rating_filter"
-                    )
-            
-            # only proceed if feedback exists
-            if sample_feedback:
-                st.write("---")
-                
-                # Display selected track feedback
-                track_data = sample_feedback[selected_track]
-                ratings = track_data['ratings']
-                comments = track_data['comments']
-                
-                # Filter by rating
-                filtered_indices = [i for i, r in enumerate(ratings) if min_rating[0] <= r <= min_rating[1]]
-                filtered_ratings = [ratings[i] for i in filtered_indices]
-                if comments and len(comments) == len(ratings):
-                    filtered_comments = [comments[i] for i in filtered_indices]
-                else:
-                    filtered_comments = []
-                
-                # Header for selected track
-                col1, col2 = st.columns([2, 1])
-                with col1:
-                    st.write(f"### 🎵 {track_data['name']}")
-                    st.write(f"**Artist:** {track_data['artist']}")
-                with col2:
-                    avg_rating = np.mean(filtered_ratings) if filtered_ratings else 0
-                    st.metric("⭐ Avg Rating", f"{avg_rating:.1f}/5", delta=f"{len(filtered_ratings)} ratings")
-                
-                st.write("---")
-                
-                # Top-rated tracks visualization
-                st.subheader("🏆 Top-Rated Tracks")
-                
-                # Calculate average ratings for all tracks
-                top_tracks_data = []
-                for track_id, track_info in sample_feedback.items():
-                    avg_rating = np.mean(track_info['ratings'])
-                    num_ratings = len(track_info['ratings'])
-                    top_tracks_data.append({
-                        'Track': track_info['name'],
-                        'Artist': track_info['artist'],
-                        'Avg Rating': avg_rating,
-                        'Ratings Count': num_ratings
-                    })
-                
-                top_tracks_df = pd.DataFrame(top_tracks_data).sort_values('Avg Rating', ascending=False)
-                
-                fig = px.bar(
-                    top_tracks_df,
-                    x='Track',
-                    y='Avg Rating',
-                    color='Avg Rating',
-                    color_continuous_scale='RdYlGn',
-                    title='Top-Rated Tracks by Average Score',
-                    labels={'Avg Rating': 'Average Rating (out of 5)', 'Track': 'Track Name'},
-                    hover_data=['Artist', 'Ratings Count']
-                )
-                fig.update_layout(height=400, xaxis_tickangle=-45)
-                st.plotly_chart(fig, use_container_width=True)
-            
+
             st.write("---")
-            
-            # Rating distribution pie chart
+
+            track_data = sample_feedback[selected_track]
+            ratings = track_data['ratings']
+            filtered_ratings = [r for r in ratings if min_rating[0] <= r <= min_rating[1]]
+
+            header_col1, header_col2 = st.columns([2, 1])
+            with header_col1:
+                st.write(f"### 🎵 {track_data['name']}")
+                st.write(f"**Artist:** {track_data['artist']}")
+            with header_col2:
+                avg_rating = np.mean(filtered_ratings) if filtered_ratings else 0
+                st.metric("⭐ Avg Rating", f"{avg_rating:.1f}/5", delta=f"{len(filtered_ratings)} ratings")
+
+            st.write("---")
             st.subheader("📊 Rating Distribution")
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
+
+            if filtered_ratings:
                 rating_counts = pd.Series(filtered_ratings).value_counts().sort_index()
-                
                 colors_list = ['#ff4d4d', '#ff9999', '#ffff99', '#99ff99', '#4dff4d']
-                
+
                 fig = px.pie(
                     values=rating_counts.values,
                     names=[f"⭐ {i} Star" for i in rating_counts.index],
@@ -699,233 +572,35 @@ elif page == "Analytics Dashboard":
                 )
                 fig.update_layout(height=400)
                 st.plotly_chart(fig, use_container_width=True)
-            
-            with col2:
-                # User feedback comments
-                st.subheader("💬 User Comments & Feedback")
-                
-                if filtered_comments:
-                    for idx, (rating, comment) in enumerate(zip(filtered_ratings, filtered_comments), 1):
-                        rating_emoji = "⭐" * rating
-                        st.write(f"**{rating_emoji}** - *{comment}*")
-                else:
-                    st.info("No comments for this rating range.")
-            
-            st.write("---")
-            
-            # Common suggestions
-            st.subheader("💡 Common User Suggestions & Insights")
-            
-            all_suggestions = []
-            for comment in filtered_comments:
-                all_suggestions.extend(extract_suggestions(comment))
-            
-            if all_suggestions:
-                suggestion_counts = Counter(all_suggestions)
-                top_suggestions = suggestion_counts.most_common(5)
-                
-                suggestion_df = pd.DataFrame(top_suggestions, columns=['Suggestion', 'Frequency'])
-                
-                fig = px.bar(
-                    suggestion_df,
-                    x='Frequency',
-                    y='Suggestion',
-                    orientation='h',
-                    title='Most Common User Suggestions',
-                    color='Frequency',
-                    color_continuous_scale='Blues'
-                )
-                fig.update_layout(height=300, showlegend=False)
-                st.plotly_chart(fig, use_container_width=True)
             else:
-                st.info("No specific suggestions found in feedback for this rating range.")
-        
-        # ==========================================
-        # TAB 3: MOOD ANALYTICS
-        # ==========================================
-        with analytics_tab3:
-            st.subheader("🎭 Mood Distribution & Analysis")
-            
-            # Mood filter
-            all_moods = set()
-            for track_info in sample_feedback.values():
-                all_moods.update(track_info['moods'])
-            
-            all_moods = list(all_moods) if all_moods else ['happy', 'sad', 'calm', 'energetic', 'romantic']
-            
-            selected_mood = st.multiselect(
-                "Filter by Mood",
-                all_moods,
-                default=all_moods[:3] if len(all_moods) >= 3 else all_moods
+                st.info("No ratings found in the selected range for this track.")
+
+            st.write("---")
+            st.subheader("🏆 Top-Rated Tracks")
+
+            top_tracks_data = []
+            for track_id, track_info in sample_feedback.items():
+                avg_track_rating = np.mean(track_info['ratings']) if track_info['ratings'] else 0
+                top_tracks_data.append({
+                    'Track': track_info['name'],
+                    'Artist': track_info['artist'],
+                    'Avg Rating': avg_track_rating,
+                    'Ratings Count': len(track_info['ratings'])
+                })
+
+            top_tracks_df = pd.DataFrame(top_tracks_data).sort_values('Avg Rating', ascending=False).head(15)
+
+            fig = px.bar(
+                top_tracks_df,
+                x='Track',
+                y='Avg Rating',
+                color='Avg Rating',
+                color_continuous_scale='RdYlGn',
+                title='Top-Rated Tracks by Average Score',
+                labels={'Avg Rating': 'Average Rating (out of 5)', 'Track': 'Track Name'},
+                hover_data=['Artist', 'Ratings Count']
             )
-            
-            st.write("---")
-            
-            # Mood distribution across all feedback
-            st.subheader("🎭 Mood Distribution in Feedback")
-            
-            mood_counts = Counter()
-            for track_info in sample_feedback.values():
-                mood_counts.update(track_info['moods'])
-            
-            if mood_counts:
-                mood_df = pd.DataFrame(list(mood_counts.items()), columns=['Mood', 'Count'])
-                mood_df = mood_df.sort_values('Count', ascending=False)
-                
-                # Color map for moods
-                colors = [MOOD_COLORS.get(mood, '#A9A9A9') for mood in mood_df['Mood']]
-                
-                fig = px.bar(
-                    mood_df,
-                    x='Mood',
-                    y='Count',
-                    title='Overall Mood Distribution in User Feedback',
-                    color='Mood',
-                    color_discrete_map=MOOD_COLORS,
-                    labels={'Count': 'Number of Mentions', 'Mood': 'Detected Mood'}
-                )
-                fig.update_layout(height=400, showlegend=False)
-                st.plotly_chart(fig, use_container_width=True)
-            
-            st.write("---")
-            
-            # Tracks by mood
-            st.subheader("🎵 Tracks Grouped by Mood")
-            
-            col1, col2 = st.columns(2)
-            
-            if selected_mood:
-                # Create mood-track mapping
-                mood_track_map = {}
-                for mood in selected_mood:
-                    mood_track_map[mood] = []
-                    for track_id, track_info in sample_feedback.items():
-                        if mood in track_info['moods']:
-                            mood_track_map[mood].append({
-                                'Track': track_info['name'],
-                                'Artist': track_info['artist'],
-                                'Avg Rating': np.mean(track_info['ratings'])
-                            })
-                
-                with col1:
-                    st.write("**Tracks by Selected Moods**")
-                    for mood in selected_mood:
-                        if mood_track_map[mood]:
-                            st.write(f"### {mood.title()} 🎭")
-                            for track in mood_track_map[mood]:
-                                st.write(f"- **{track['Track']}** by {track['Artist']} ({track['Avg Rating']:.1f}⭐)")
-                        else:
-                            st.write(f"*No tracks found for {mood} mood*")
-                
-                with col2:
-                    # Mood-rating correlation
-                    st.write("**Mood Rating Correlation**")
-                    
-                    mood_ratings = {}
-                    for mood in selected_mood:
-                        ratings = []
-                        for track_id, track_info in sample_feedback.items():
-                            if mood in track_info['moods']:
-                                ratings.extend(track_info['ratings'])
-                        if ratings:
-                            mood_ratings[mood] = np.mean(ratings)
-                    
-                    if mood_ratings:
-                        mood_rating_df = pd.DataFrame(list(mood_ratings.items()), columns=['Mood', 'Avg Rating'])
-                        
-                        fig = px.bar(
-                            mood_rating_df,
-                            x='Mood',
-                            y='Avg Rating',
-                            color='Mood',
-                            color_discrete_map=MOOD_COLORS,
-                            title='Average Rating by Mood',
-                            range_y=[0, 5]
-                        )
-                        fig.update_layout(height=400, showlegend=False)
-                        st.plotly_chart(fig, use_container_width=True)
-        
-        # ==========================================
-        # TAB 4: RECOMMENDATION INSIGHTS
-        # ==========================================
-        with analytics_tab4:
-            st.subheader("🎧 Recommendation Engine Performance")
-            
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                st.metric("🔍 Data Sparsity", "99.96%", help="% of user-song pairs with no interaction")
-            
-            with col2:
-                st.metric("🎚️ Features Used", 11, help="Audio features for content-based filtering")
-            
-            with col3:
-                st.metric("🔄 Methods", 2, help="Collaborative + Content-based")
-            
-            st.write("---")
-            
-            st.subheader("⚙️ How the Engine Works")
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.info("""
-                **🤝 Collaborative Filtering**
-                - Builds user-item matrix
-                - Matrix size: 9,648 users × 15,473 songs
-                - Finds users with similar taste
-                - Recommends unheard songs they liked
-                - Best for: Discovering trending music
-                """)
-            
-            with col2:
-                st.info("""
-                **🎵 Content-Based Filtering**
-                - Uses 11 audio features
-                - Analyzes: Energy, valence, danceability, etc.
-                - Calculates song similarity
-                - Recommends similar songs
-                - Best for: New/unpopular tracks
-                """)
-            
-            st.write("---")
-            
-            # Sample recommendations quality check
-            st.subheader("✅ Recommendation Quality Check")
-            
-            sample_users = rec_engine.get_all_user_ids()[:5]
-            
-            quality_data = []
-            for user in sample_users:
-                prefs = rec_engine.get_user_preferences(user)
-                collab = rec_engine.collaborative_filtering(user, top_n=3)
-                content = rec_engine.content_based_filtering(user, top_n=3)
-                
-                if prefs:
-                    quality_data.append({
-                        'User ID': user[:12] + '...',
-                        'Songs Heard': prefs['total_songs_listened'],
-                        'Collab Recs': len(collab),
-                        'Content Recs': len(content),
-                        'Avg Energy': f"{prefs['avg_energy']:.2f}"
-                    })
-            
-            if quality_data:
-                quality_df = pd.DataFrame(quality_data)
-                
-                fig = px.bar(
-                    quality_df,
-                    x='User ID',
-                    y=['Collab Recs', 'Content Recs'],
-                    barmode='group',
-                    title='Recommendation Coverage per User',
-                    labels={'value': 'Number of Recommendations'},
-                    color_discrete_map={'Collab Recs': '#7b5cff', 'Content Recs': '#00c6ff'}
-                )
-                fig.update_layout(height=400)
-                st.plotly_chart(fig, use_container_width=True)
-                
-                st.write("**Sample User Recommendations Quality**")
-                st.dataframe(quality_df, use_container_width=True)
+            fig.update_layout(height=400, xaxis_tickangle=-45)
+            st.plotly_chart(fig, use_container_width=True)
 
 
