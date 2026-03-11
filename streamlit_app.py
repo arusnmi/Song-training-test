@@ -633,7 +633,10 @@ elif page == "Analytics Dashboard":
                 # Filter by rating
                 filtered_indices = [i for i, r in enumerate(ratings) if min_rating[0] <= r <= min_rating[1]]
                 filtered_ratings = [ratings[i] for i in filtered_indices]
-                filtered_comments = [comments[i] for i in filtered_indices]
+                if comments and len(comments) == len(ratings):
+                    filtered_comments = [comments[i] for i in filtered_indices]
+                else:
+                    filtered_comments = []
                 
                 # Header for selected track
                 col1, col2 = st.columns([2, 1])
