@@ -32,7 +32,14 @@ def load_recommendation_engine():
     an exception will be raised so the problem is obvious during development.
     """
     base = Path(__file__).parent
-    music_info = base / "Music Info.csv"
+    # prefer the version with genre column if present
+    genre_file = base / "Music_Info_genre_present.csv"
+    default_file = base / "Music Info.csv"
+    if genre_file.exists():
+        music_info = genre_file
+    else:
+        music_info = default_file
+
     listening_history = base / "User Listening History.csv"
 
     # allow the exception to propagate if files are absent - we always use the
