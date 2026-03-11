@@ -31,20 +31,35 @@ def load_recommendation_engine():
     and makes no attempt to upload alternative datasets.  If they are missing
     an exception will be raised so the problem is obvious during development.
     """
-    base = Path(__file__).parent
-    # prefer the version with genre column if present
-    genre_file = base / "Music_Info_genre_present.csv"
-    default_file = base / "Music Info.csv"
-    if genre_file.exists():
-        music_info = genre_file
-    else:
-        music_info = default_file
+    script_dir = Path(__file__).resolve().parent
+    cwd_dir = Path.cwd().resolve()
 
-    listening_history = base / "User Listening History.csv"
+    # Prefer genre-enriched music info file; check both script dir and cwd.
+    music_candidates = [
+        script_dir / "Music_Info_genre_present.csv",
+        cwd_dir / "Music_Info_genre_present.csv",
+        script_dir / "Music Info.csv",
+        cwd_dir / "Music Info.csv",
+    ]
 
-    # allow the exception to propagate if files are absent - we always use the
-    # dataset checked into source control.
-    return RecommendationEngine(str(music_info), str(listening_history))
+    # Listening history filename can vary by execution context, so probe both.
+    history_candidates = [
+        script_dir / "User Listening History.csv",
+        cwd_dir / "User Listening History.csv",
+    ]
+
+    music_info = next((p for p in music_candidates if p.exists()), None)
+    listening_history = next((p for p in history_candidates if p.exists()), None)
+
+    if music_info is None or listening_history is None:
+        checked_music = ", ".join(str(p) for p in music_candidates)
+        checked_history = ", ".join(str(p) for p in history_candidates)
+        raise FileNotFoundError(
+            f"Missing dataset files. Checked music files: [{checked_music}] | "
+            f"Checked listening history files: [{checked_history}]"
+        )
+
+    return RecommendationEngine(str(music_info.resolve()), str(listening_history.resolve()))
 
 @st.cache_resource
 def load_gemini_explainer():
