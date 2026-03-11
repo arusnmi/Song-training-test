@@ -114,52 +114,40 @@ def extract_suggestions(text):
     
     return [s.strip() for s in suggestions if len(s.strip()) > 3]
 
-def generate_sample_feedback():
-    """Generate sample feedback data for demonstration"""
-    sample_tracks = [
-        {'id': 'TRACK001', 'name': 'Cosmic Journey', 'artist': 'Stellar Waves'},
-        {'id': 'TRACK002', 'name': 'Urban Nights', 'artist': 'City Beats'},
-        {'id': 'TRACK003', 'name': 'Mountain Echo', 'artist': 'Nature Sounds'},
-        {'id': 'TRACK004', 'name': 'Digital Dreams', 'artist': 'Synth Masters'},
-        {'id': 'TRACK005', 'name': 'Midnight Rain', 'artist': 'Melancholy Mood'},
-    ]
-    
-    comments_pool = [
-        "Absolutely love this! So energetic and uplifting. Would love more like this.",
-        "Beautiful melody. Very relaxing. Perfect for meditation.",
-        "Great composition! Reminds me of classic jazz. More of this please.",
-        "Not my style. Too melancholic. Prefer more upbeat tracks.",
-        "Amazing! So creative. Love the instrumentation. Would recommend!",
-        "Good track but a bit repetitive. More variation would be nice.",
-        "Outstanding! This is what I've been looking for. More collaborations please!",
-        "Decent, but needs more energy. Overall 3/5.",
-        "Absolutely perfect for my workout playlist!",
-        "Very dreamy and peaceful. Love it for late-night work sessions.",
-    ]
-    
-    feedback_data = {}
-    for track in sample_tracks:
-        ratings = np.random.randint(2, 6, size=np.random.randint(3, 8))
-        sample_comments = np.random.choice(comments_pool, size=len(ratings), replace=True)
-        
-        feedback_data[track['id']] = {
-            'name': track['name'],
-            'artist': track['artist'],
-            'ratings': list(ratings),
-            'comments': list(sample_comments),
+def load_feedback_from_history(engine):
+    """Create a feedback-like structure using listening history.
+
+    The app used to manufacture fake comments and ratings.  We now leverage the
+    real CSV that lives in the repo; playcounts are treated as ratings and no
+    textual feedback is available.
+    """
+    feedback = {}
+    if engine is None or engine.listening_df is None:
+        return feedback
+
+    for track_id, group in engine.listening_df.groupby('track_id'):
+        track_info = engine.music_df[engine.music_df['track_id'] == track_id]
+        if not track_info.empty:
+            row = track_info.iloc[0]
+            name = row.get('name', track_id)
+            artist = row.get('artist', 'Unknown')
+        else:
+            name = track_id
+            artist = 'Unknown'
+
+        ratings = group['playcount'].tolist()
+        feedback[track_id] = {
+            'name': name,
+            'artist': artist,
+            'ratings': ratings,
+            'comments': [],
             'moods': [],
             'suggestions': []
         }
-        
-        # Extract moods and suggestions from comments
-        for comment in sample_comments:
-            feedback_data[track['id']]['moods'].extend(parse_mood_from_text(comment))
-            feedback_data[track['id']]['suggestions'].extend(extract_suggestions(comment))
-    
-    return feedback_data
+    return feedback
 
-# Generate sample feedback data
-sample_feedback = generate_sample_feedback()
+# derive feedback from the listening history CSV
+sample_feedback = load_feedback_from_history(rec_engine)
 
 # Mood colors for consistent visualization
 MOOD_COLORS = {
@@ -250,49 +238,49 @@ elif page == "Remix / Compose Studio":
         ["Compose (AI Generated)", "Remix Songs"]
     )
 
-    dataset = [
-        "Song A",
-        "Song B",
-        "Song C",
-        "Song D",
-        "Song E"
-    ]
+    # use track names from the loaded recommendation engine (falls back to empty list)
+    if rec_engine is not None and hasattr(rec_engine, 'music_df'):
+        # take first 100 names for performance in UI
+        dataset = rec_engine.music_df['name'].dropna().unique().tolist()[:100]
+    else:
+        dataset = []
 
     # COMPOSE
     if mode == "Compose (AI Generated)":
 
         st.write("Generate music using a random seed from dataset")
 
-        if st.button("Generate Composition"):
-
-            seed_song = random.choice(dataset)
-
-            st.success(f"Seed song selected: {seed_song}")
-
-            st.audio(
-                "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"
-            )
+        if not dataset:
+            st.info("⚠️ No track data available. Please initialize the recommendation engine or upload the CSV files.")
+        else:
+            if st.button("Generate Composition"):
+                seed_song = random.choice(dataset)
+                st.success(f"Seed song selected: {seed_song}")
+                st.audio(
+                    "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"
+                )
 
     # REMIX
     if mode == "Remix Songs":
 
-        col1, col2 = st.columns(2)
+        if not dataset:
+            st.info("⚠️ Track list empty – load or upload data to remix.")
+        else:
+            col1, col2 = st.columns(2)
 
-        with col1:
-            track1 = st.selectbox("Track 1", dataset)
-            blend = st.slider("Blend Ratio", 0.0, 1.0, 0.5)
+            with col1:
+                track1 = st.selectbox("Track 1", dataset)
+                blend = st.slider("Blend Ratio", 0.0, 1.0, 0.5)
 
-        with col2:
-            track2 = st.selectbox("Track 2", dataset)
-            tempo = st.slider("Tempo Adjustment", 0.5, 2.0, 1.0)
+            with col2:
+                track2 = st.selectbox("Track 2", dataset)
+                tempo = st.slider("Tempo Adjustment", 0.5, 2.0, 1.0)
 
-        if st.button("Create Remix"):
-
-            st.success(f"Remixed {track1} and {track2}")
-
-            st.audio(
-                "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"
-            )
+            if st.button("Create Remix"):
+                st.success(f"Remixed {track1} and {track2}")
+                st.audio(
+                    "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"
+                )
 
 # -----------------------------
 # RECOMMENDATIONS
@@ -592,78 +580,84 @@ elif page == "Analytics Dashboard":
         with analytics_tab2:
             st.subheader("⭐ User Feedback & Rating Analysis")
             
-            # Sidebar filters
-            st.write("### 🔍 Filter Options")
+            # if there is no feedback data derived from listening history, show message
+            if not sample_feedback:
+                st.info("No feedback data available from the listening history CSV.")
+            else:
+                # Sidebar filters
+                st.write("### 🔍 Filter Options")
+                
+                filter_col1, filter_col2 = st.columns(2)
+                
+                with filter_col1:
+                    selected_track = st.selectbox(
+                        "Filter by Track",
+                        list(sample_feedback.keys()),
+                        format_func=lambda x: f"{sample_feedback[x]['name']} - {sample_feedback[x]['artist']}"
+                    )
+                
+                with filter_col2:
+                    min_rating = st.select_slider(
+                        "Filter by Minimum Rating",
+                        options=[1, 2, 3, 4, 5],
+                        value=(1, 5),
+                        key="rating_filter"
+                    )
             
-            filter_col1, filter_col2 = st.columns(2)
-            
-            with filter_col1:
-                selected_track = st.selectbox(
-                    "Filter by Track",
-                    list(sample_feedback.keys()),
-                    format_func=lambda x: f"{sample_feedback[x]['name']} - {sample_feedback[x]['artist']}"
+            # only proceed if feedback exists
+            if sample_feedback:
+                st.write("---")
+                
+                # Display selected track feedback
+                track_data = sample_feedback[selected_track]
+                ratings = track_data['ratings']
+                comments = track_data['comments']
+                
+                # Filter by rating
+                filtered_indices = [i for i, r in enumerate(ratings) if min_rating[0] <= r <= min_rating[1]]
+                filtered_ratings = [ratings[i] for i in filtered_indices]
+                filtered_comments = [comments[i] for i in filtered_indices]
+                
+                # Header for selected track
+                col1, col2 = st.columns([2, 1])
+                with col1:
+                    st.write(f"### 🎵 {track_data['name']}")
+                    st.write(f"**Artist:** {track_data['artist']}")
+                with col2:
+                    avg_rating = np.mean(filtered_ratings) if filtered_ratings else 0
+                    st.metric("⭐ Avg Rating", f"{avg_rating:.1f}/5", delta=f"{len(filtered_ratings)} ratings")
+                
+                st.write("---")
+                
+                # Top-rated tracks visualization
+                st.subheader("🏆 Top-Rated Tracks")
+                
+                # Calculate average ratings for all tracks
+                top_tracks_data = []
+                for track_id, track_info in sample_feedback.items():
+                    avg_rating = np.mean(track_info['ratings'])
+                    num_ratings = len(track_info['ratings'])
+                    top_tracks_data.append({
+                        'Track': track_info['name'],
+                        'Artist': track_info['artist'],
+                        'Avg Rating': avg_rating,
+                        'Ratings Count': num_ratings
+                    })
+                
+                top_tracks_df = pd.DataFrame(top_tracks_data).sort_values('Avg Rating', ascending=False)
+                
+                fig = px.bar(
+                    top_tracks_df,
+                    x='Track',
+                    y='Avg Rating',
+                    color='Avg Rating',
+                    color_continuous_scale='RdYlGn',
+                    title='Top-Rated Tracks by Average Score',
+                    labels={'Avg Rating': 'Average Rating (out of 5)', 'Track': 'Track Name'},
+                    hover_data=['Artist', 'Ratings Count']
                 )
-            
-            with filter_col2:
-                min_rating = st.select_slider(
-                    "Filter by Minimum Rating",
-                    options=[1, 2, 3, 4, 5],
-                    value=(1, 5),
-                    key="rating_filter"
-                )
-            
-            st.write("---")
-            
-            # Display selected track feedback
-            track_data = sample_feedback[selected_track]
-            ratings = track_data['ratings']
-            comments = track_data['comments']
-            
-            # Filter by rating
-            filtered_indices = [i for i, r in enumerate(ratings) if min_rating[0] <= r <= min_rating[1]]
-            filtered_ratings = [ratings[i] for i in filtered_indices]
-            filtered_comments = [comments[i] for i in filtered_indices]
-            
-            # Header for selected track
-            col1, col2 = st.columns([2, 1])
-            with col1:
-                st.write(f"### 🎵 {track_data['name']}")
-                st.write(f"**Artist:** {track_data['artist']}")
-            with col2:
-                avg_rating = np.mean(filtered_ratings) if filtered_ratings else 0
-                st.metric("⭐ Avg Rating", f"{avg_rating:.1f}/5", delta=f"{len(filtered_ratings)} ratings")
-            
-            st.write("---")
-            
-            # Top-rated tracks visualization
-            st.subheader("🏆 Top-Rated Tracks")
-            
-            # Calculate average ratings for all tracks
-            top_tracks_data = []
-            for track_id, track_info in sample_feedback.items():
-                avg_rating = np.mean(track_info['ratings'])
-                num_ratings = len(track_info['ratings'])
-                top_tracks_data.append({
-                    'Track': track_info['name'],
-                    'Artist': track_info['artist'],
-                    'Avg Rating': avg_rating,
-                    'Ratings Count': num_ratings
-                })
-            
-            top_tracks_df = pd.DataFrame(top_tracks_data).sort_values('Avg Rating', ascending=False)
-            
-            fig = px.bar(
-                top_tracks_df,
-                x='Track',
-                y='Avg Rating',
-                color='Avg Rating',
-                color_continuous_scale='RdYlGn',
-                title='Top-Rated Tracks by Average Score',
-                labels={'Avg Rating': 'Average Rating (out of 5)', 'Track': 'Track Name'},
-                hover_data=['Artist', 'Ratings Count']
-            )
-            fig.update_layout(height=400, xaxis_tickangle=-45)
-            st.plotly_chart(fig, use_container_width=True)
+                fig.update_layout(height=400, xaxis_tickangle=-45)
+                st.plotly_chart(fig, use_container_width=True)
             
             st.write("---")
             
