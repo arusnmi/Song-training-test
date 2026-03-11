@@ -28,12 +28,12 @@ def load_recommendation_engine():
     """Load and cache the recommendation engine.
 
     For cloud deployments we avoid hard‑coded absolute paths.  The app looks
-    for the two CSV files in a `data/` subdirectory next to this script.  If
+    for the two CSV files in the root directory next to this script.  If
     they aren't found the function returns ``None`` so the UI can prompt the
     user to upload the files at runtime.
     """
     base = Path(__file__).parent
-    data_dir = base / "data"
+    data_dir = base
 
     music_info = data_dir / "Music Info.csv"
     listening_history = data_dir / "User Listening History.csv"
