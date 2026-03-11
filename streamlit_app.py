@@ -25,24 +25,19 @@ st.set_page_config(
 # Initialize recommendation engine
 @st.cache_resource
 def load_recommendation_engine():
-    """Load and cache the recommendation engine.
+    """Load and cache the recommendation engine from the fixed CSVs.
 
-    For cloud deployments we avoid hard‑coded absolute paths.  The app looks
-    for the two CSV files in the root directory next to this script.  If
-    they aren't found the function returns ``None`` so the UI can prompt the
-    user to upload the files at runtime.
+    This version assumes the two files are present in the repository root
+    and makes no attempt to upload alternative datasets.  If they are missing
+    an exception will be raised so the problem is obvious during development.
     """
     base = Path(__file__).parent
-    data_dir = base
+    music_info = base / "Music Info.csv"
+    listening_history = base / "User Listening History.csv"
 
-    music_info = data_dir / "Music Info.csv"
-    listening_history = data_dir / "User Listening History.csv"
-
-    if music_info.exists() and listening_history.exists():
-        return RecommendationEngine(str(music_info), str(listening_history))
-
-    # missing files – the UI will warn users and offer upload buttons
-    return None
+    # allow the exception to propagate if files are absent - we always use the
+    # dataset checked into source control.
+    return RecommendationEngine(str(music_info), str(listening_history))
 
 @st.cache_resource
 def load_gemini_explainer():
@@ -61,22 +56,16 @@ def initialize_feedback_db():
     return feedback_db
 
 # Initialize engines
-rec_engine = load_recommendation_engine()
+load_error = None
+try:
+    rec_engine = load_recommendation_engine()
+except Exception as e:
+    rec_engine = None
+    load_error = str(e)
+
 gemini_explainer = load_gemini_explainer()
 feedback_db = initialize_feedback_db()
 
-# if the engine couldn't be loaded from disk, allow user to upload files
-if rec_engine is None:
-    st.sidebar.warning("Music data not found. Upload CSVs to enable recommendations.")
-    with st.sidebar.expander("Upload Recommendation Data"):
-        music_file = st.file_uploader("Music Info CSV", type="csv", key="upload_music")
-        listen_file = st.file_uploader("User Listening History CSV", type="csv", key="upload_history")
-        if music_file and listen_file:
-            try:
-                rec_engine = RecommendationEngine(music_file, listen_file)
-                st.sidebar.success("Recommendation engine initialized from uploaded files!")
-            except Exception as e:
-                st.sidebar.error(f"Failed to initialize engine: {e}")
 
 # Helper functions for feedback system
 def parse_mood_from_text(text):
@@ -251,7 +240,7 @@ elif page == "Remix / Compose Studio":
         st.write("Generate music using a random seed from dataset")
 
         if not dataset:
-            st.info("⚠️ No track data available. Please initialize the recommendation engine or upload the CSV files.")
+            st.info("⚠️ No track data available. Ensure the CSVs are present in the repository root.")
         else:
             if st.button("Generate Composition"):
                 seed_song = random.choice(dataset)
@@ -264,7 +253,7 @@ elif page == "Remix / Compose Studio":
     if mode == "Remix Songs":
 
         if not dataset:
-            st.info("⚠️ Track list empty – load or upload data to remix.")
+            st.info("⚠️ Track list empty – verify that the music dataset is available.")
         else:
             col1, col2 = st.columns(2)
 
@@ -290,7 +279,10 @@ elif page == "Recommendations":
     st.header("🎧 Music Recommendations Engine")
 
     if rec_engine is None:
-        st.error("❌ Recommendation engine not initialized. Please check data paths.")
+        msg = "❌ Recommendation engine not initialized. "
+        if load_error:
+            msg += f"(Load error: {load_error})"
+        st.error(msg)
     else:
         # Get available users
         available_users = rec_engine.get_all_user_ids()
@@ -502,7 +494,10 @@ elif page == "Analytics Dashboard":
     st.header("📊 Interactive Analytics & Feedback Dashboard")
 
     if rec_engine is None:
-        st.error("❌ Analytics engine not initialized.")
+        msg = "❌ Analytics engine not initialized."
+        if load_error:
+            msg += f" (Load error: {load_error})"
+        st.error(msg)
     else:
         # Using tabs for different analytics views
         analytics_tab1, analytics_tab2, analytics_tab3, analytics_tab4 = st.tabs(
