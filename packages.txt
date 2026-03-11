@@ -3,3 +3,5 @@ libsndfile1
 libasound2-dev
 libportaudio2
 libportaudiocpp0
+build-essential
+python3-dev
