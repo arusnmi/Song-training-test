@@ -25,13 +25,23 @@ st.set_page_config(
 # Initialize recommendation engine
 @st.cache_resource
 def load_recommendation_engine():
-    """Load and cache the recommendation engine"""
-    capstone_dir = r"c:\Users\warty\OneDrive\Desktop\Python_projects\Capstone_music_maker\Scenario 2_ AI Music Composer & Listener Insight platform"
-    music_info = os.path.join(capstone_dir, "Music Info.csv")
-    listening_history = os.path.join(capstone_dir, "User Listening History.csv")
-    
-    if os.path.exists(music_info) and os.path.exists(listening_history):
-        return RecommendationEngine(music_info, listening_history)
+    """Load and cache the recommendation engine.
+
+    For cloud deployments we avoid hard‑coded absolute paths.  The app looks
+    for the two CSV files in a `data/` subdirectory next to this script.  If
+    they aren't found the function returns ``None`` so the UI can prompt the
+    user to upload the files at runtime.
+    """
+    base = Path(__file__).parent
+    data_dir = base / "data"
+
+    music_info = data_dir / "Music Info.csv"
+    listening_history = data_dir / "User Listening History.csv"
+
+    if music_info.exists() and listening_history.exists():
+        return RecommendationEngine(str(music_info), str(listening_history))
+
+    # missing files – the UI will warn users and offer upload buttons
     return None
 
 @st.cache_resource
@@ -54,6 +64,19 @@ def initialize_feedback_db():
 rec_engine = load_recommendation_engine()
 gemini_explainer = load_gemini_explainer()
 feedback_db = initialize_feedback_db()
+
+# if the engine couldn't be loaded from disk, allow user to upload files
+if rec_engine is None:
+    st.sidebar.warning("Music data not found. Upload CSVs to enable recommendations.")
+    with st.sidebar.expander("Upload Recommendation Data"):
+        music_file = st.file_uploader("Music Info CSV", type="csv", key="upload_music")
+        listen_file = st.file_uploader("User Listening History CSV", type="csv", key="upload_history")
+        if music_file and listen_file:
+            try:
+                rec_engine = RecommendationEngine(music_file, listen_file)
+                st.sidebar.success("Recommendation engine initialized from uploaded files!")
+            except Exception as e:
+                st.sidebar.error(f"Failed to initialize engine: {e}")
 
 # Helper functions for feedback system
 def parse_mood_from_text(text):
@@ -890,3 +913,5 @@ elif page == "Analytics Dashboard":
                 
                 st.write("**Sample User Recommendations Quality**")
                 st.dataframe(quality_df, use_container_width=True)
+
+
