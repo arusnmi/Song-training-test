@@ -479,14 +479,14 @@ def initialize_feedback_db():
     }
     return feedback_db
 
-# Initialize engines
-load_error = None
-try:
-    rec_engine = load_recommendation_engine()
-except Exception as e:
-    rec_engine = None
-    load_error = str(e)
+def get_recommendation_runtime():
+    """Load recommendation engine lazily so app startup remains lightweight."""
+    try:
+        return load_recommendation_engine(), None
+    except Exception as exc:
+        return None, str(exc)
 
+# Lightweight globals only
 gemini_explainer = load_gemini_explainer()
 feedback_db = initialize_feedback_db()
 
@@ -559,8 +559,8 @@ def load_feedback_from_history(engine):
         }
     return feedback
 
-# derive feedback from the listening history CSV
-sample_feedback = load_feedback_from_history(rec_engine)
+# derive feedback lazily in pages that need recommendation data
+sample_feedback = {}
 
 # Mood colors for consistent visualization
 MOOD_COLORS = {
@@ -650,13 +650,6 @@ elif page == "Remix / Compose Studio":
         "Mode",
         ["Compose (AI Generated)", "Remix Songs"]
     )
-
-    # use track names from the loaded recommendation engine (falls back to empty list)
-    if rec_engine is not None and hasattr(rec_engine, 'music_df'):
-        # take first 100 names for performance in UI
-        dataset = rec_engine.music_df['name'].dropna().unique().tolist()[:100]
-    else:
-        dataset = []
 
     midi_track_map = get_midi_track_map()
     midi_dataset = sorted(midi_track_map.keys())
@@ -788,6 +781,8 @@ elif page == "Remix / Compose Studio":
 elif page == "Recommendations":
 
     st.header("🎧 Music Recommendations Engine")
+
+    rec_engine, load_error = get_recommendation_runtime()
 
     if rec_engine is None:
         msg = "❌ Recommendation engine not initialized. "
@@ -1039,6 +1034,8 @@ elif page == "Mood & Instrument Analyzer":
 elif page == "Analytics Dashboard":
 
     st.header("📊 Interactive Analytics & Feedback Dashboard")
+
+    rec_engine, load_error = get_recommendation_runtime()
 
     if rec_engine is None:
         msg = "❌ Analytics engine not initialized."
