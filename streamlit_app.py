@@ -67,6 +67,27 @@ def load_gemini_explainer():
     api_key = st.secrets.get("GEMINI_API_KEY", None) if hasattr(st, 'secrets') else None
     return GeminiExplainer(api_key)
 
+@st.cache_data
+def load_midi_tracks():
+    """Return available MIDI song names from the local Midi_files folder."""
+    script_dir = Path(__file__).resolve().parent
+    cwd_dir = Path.cwd().resolve()
+
+    midi_candidates = [
+        script_dir / "Midi_files",
+        cwd_dir / "Midi_files",
+    ]
+
+    midi_dir = next((p for p in midi_candidates if p.exists() and p.is_dir()), None)
+    if midi_dir is None:
+        return []
+
+    midi_files = []
+    for pattern in ("*.mid", "*.midi"):
+        midi_files.extend(midi_dir.glob(pattern))
+
+    return sorted({midi_file.name for midi_file in midi_files})
+
 # Initialize feedback database (in-memory for demo)
 @st.cache_resource
 def initialize_feedback_db():
@@ -256,6 +277,8 @@ elif page == "Remix / Compose Studio":
     else:
         dataset = []
 
+    midi_dataset = load_midi_tracks()
+
     # COMPOSE
     if mode == "Compose (AI Generated)":
 
@@ -274,24 +297,35 @@ elif page == "Remix / Compose Studio":
     # REMIX
     if mode == "Remix Songs":
 
-        if not dataset:
-            st.info("⚠️ Track list empty – verify that the music dataset is available.")
+        if not midi_dataset:
+            st.info("⚠️ No MIDI songs found in the Midi_files folder.")
         else:
             col1, col2 = st.columns(2)
 
             with col1:
-                track1 = st.selectbox("Track 1", dataset)
+                track1 = st.selectbox("Track 1", midi_dataset, key="remix_track_1")
                 blend = st.slider("Blend Ratio", 0.0, 1.0, 0.5)
 
+            track2_options = [song for song in midi_dataset if song != track1]
+
             with col2:
-                track2 = st.selectbox("Track 2", dataset)
+                if not track2_options:
+                    st.warning("Need at least two MIDI songs to create a remix.")
+                    track2 = None
+                else:
+                    track2 = st.selectbox("Track 2", track2_options, key="remix_track_2")
                 tempo = st.slider("Tempo Adjustment", 0.5, 2.0, 1.0)
 
             if st.button("Create Remix"):
-                st.success(f"Remixed {track1} and {track2}")
-                st.audio(
-                    "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"
-                )
+                if track2 is None:
+                    st.error("Please add at least two MIDI songs to the Midi_files folder.")
+                elif track1 == track2:
+                    st.error("Track 1 and Track 2 must be different songs.")
+                else:
+                    st.success(f"Remixed {track1} and {track2}")
+                    st.audio(
+                        "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"
+                    )
 
 # -----------------------------
 # RECOMMENDATIONS
