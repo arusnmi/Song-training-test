@@ -11,6 +11,7 @@ from recommendation_engine import RecommendationEngine, GeminiExplainer
 import os
 import io
 import pickle
+import tempfile
 from pathlib import Path
 from collections import Counter
 import re
@@ -746,6 +747,84 @@ elif page == "Remix / Compose Studio":
                 for checked_path in get_midi_search_locations():
                     st.write(f"- {checked_path}")
                 st.caption("Set MIDI_FILES_DIR in environment variables to override the folder path.")
+
+            st.subheader("Upload Two MIDI Files for Remix")
+            up_col1, up_col2 = st.columns(2)
+            with up_col1:
+                uploaded_midi_1 = st.file_uploader(
+                    "Upload Track 1 MIDI",
+                    type=["mid", "midi"],
+                    key="uploaded_remix_track_1"
+                )
+                blend = st.slider("Blend Ratio", 0.0, 1.0, 0.5, key="uploaded_blend")
+            with up_col2:
+                uploaded_midi_2 = st.file_uploader(
+                    "Upload Track 2 MIDI",
+                    type=["mid", "midi"],
+                    key="uploaded_remix_track_2"
+                )
+                tempo = st.slider("Tempo Adjustment", 0.5, 2.0, 1.0, key="uploaded_tempo")
+
+            if st.button("Create Remix from Uploads", key="create_remix_uploads"):
+                if uploaded_midi_1 is None or uploaded_midi_2 is None:
+                    st.error("Please upload two MIDI files.")
+                elif uploaded_midi_1.name == uploaded_midi_2.name:
+                    st.error("Track 1 and Track 2 must be different songs.")
+                else:
+                    temp_paths = []
+                    try:
+                        for uploaded in (uploaded_midi_1, uploaded_midi_2):
+                            suffix = Path(uploaded.name).suffix or ".mid"
+                            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_file:
+                                tmp_file.write(uploaded.getvalue())
+                                temp_paths.append(tmp_file.name)
+
+                        generation_temp = max(0.1, min(1.8, 0.4 + blend * 1.2))
+                        render_bpm = 120.0 * float(tempo)
+
+                        with st.spinner("Generating remix from uploaded MIDI files..."):
+                            bundle, err = build_generated_song_bundle(
+                                seed_file_1=temp_paths[0],
+                                seed_file_2=temp_paths[1],
+                                num_notes=MODEL_NOTES_DEFAULT,
+                                temperature=generation_temp,
+                                render_tempo_bpm=render_bpm,
+                            )
+
+                        if err:
+                            st.error(f"Remix generation failed: {err}")
+                        else:
+                            st.session_state["remix_song_bundle"] = bundle
+                            st.success("Remixed uploaded MIDI tracks.")
+                    finally:
+                        for temp_path in temp_paths:
+                            try:
+                                os.remove(temp_path)
+                            except Exception:
+                                pass
+
+            remix_bundle = st.session_state.get("remix_song_bundle")
+            if remix_bundle:
+                st.subheader("Generated Remix")
+                st.audio(remix_bundle["audio_wave"], sample_rate=SYNTH_SAMPLE_RATE)
+
+                if remix_bundle.get("mp3_bytes"):
+                    st.download_button(
+                        "Download Remix (MP3)",
+                        data=remix_bundle["mp3_bytes"],
+                        file_name="remix.mp3",
+                        mime="audio/mpeg",
+                        key="remix_mp3_download_uploaded",
+                    )
+                else:
+                    st.warning(remix_bundle.get("mp3_error", "MP3 export unavailable."))
+                    st.download_button(
+                        "Download Remix (WAV)",
+                        data=remix_bundle["wav_bytes"],
+                        file_name="remix.wav",
+                        mime="audio/wav",
+                        key="remix_wav_download_uploaded",
+                    )
         else:
             col1, col2 = st.columns(2)
 
