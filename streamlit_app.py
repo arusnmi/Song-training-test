@@ -178,22 +178,64 @@ def load_generation_assets():
         return None, f"Mapping file missing: {mapping_file}"
 
     try:
-        from tensorflow.keras.models import load_model
-    except Exception as exc:
-        return None, f"TensorFlow unavailable: {exc}"
-
-    try:
         with open(mapping_file, "rb") as f:
             note_to_int = pickle.load(f)
         int_to_note = {i: n for n, i in note_to_int.items()}
-        model = load_model(str(model_file))
     except Exception as exc:
-        return None, f"Failed loading generation assets: {exc}"
+        return None, f"Failed loading token mapping: {exc}"
+
+    model = None
+    load_warning = None
+
+    # Try multiple model loaders because cloud runtimes can differ in Keras/H5 compatibility.
+    try:
+        from tensorflow.keras.models import load_model
+        model = load_model(str(model_file), compile=False)
+    except Exception as exc:
+        load_warning = f"Primary model loader failed: {exc}"
+
+    if model is None:
+        try:
+            from keras.models import load_model as keras_load_model
+            model = keras_load_model(str(model_file), compile=False, safe_mode=False)
+        except Exception as exc:
+            load_warning = f"Keras fallback loader failed: {exc}"
+
+    if model is None:
+        try:
+            import h5py
+            import json
+            from tensorflow.keras.models import model_from_json
+
+            with h5py.File(str(model_file), "r") as h5f:
+                model_config = h5f.attrs.get("model_config")
+                if isinstance(model_config, bytes):
+                    model_config = model_config.decode("utf-8")
+                model_config = json.loads(model_config)
+
+            def patch_input_layer_config(node):
+                if isinstance(node, dict):
+                    if node.get("class_name") == "InputLayer":
+                        cfg = node.get("config", {})
+                        if "batch_shape" in cfg and "batch_input_shape" not in cfg:
+                            cfg["batch_input_shape"] = cfg.pop("batch_shape")
+                    for value in node.values():
+                        patch_input_layer_config(value)
+                elif isinstance(node, list):
+                    for item in node:
+                        patch_input_layer_config(item)
+
+            patch_input_layer_config(model_config)
+            model = model_from_json(json.dumps(model_config))
+            model.load_weights(str(model_file))
+        except Exception as exc:
+            load_warning = f"Legacy H5 compatibility loader failed: {exc}"
 
     return {
         "model": model,
         "note_to_int": note_to_int,
         "int_to_note": int_to_note,
+        "load_warning": load_warning,
     }, None
 
 def quantize(duration):
@@ -282,6 +324,28 @@ def generate_song_with_model(model, note_to_int, int_to_note, seed_file_path_1, 
         input_seq = np.reshape(pattern, (1, SEQUENCE_LENGTH))
         prediction = model.predict(input_seq, verbose=0)[0]
         idx = sample_with_temp(prediction, temperature)
+        note_str = int_to_note.get(idx)
+        if note_str is None:
+            continue
+
+        prediction_output.append(note_str)
+        pattern.append(idx)
+        pattern = pattern[1:]
+
+    return prediction_output
+
+def generate_song_without_model(note_to_int, int_to_note, seed_file_path_1, seed_file_path_2, num_notes):
+    """Fallback generation when model loading fails in constrained runtimes."""
+    pattern = extract_seed_from_midi(seed_file_path_1, seed_file_path_2, note_to_int)
+    if pattern is None:
+        pattern = list(np.random.randint(0, len(note_to_int), SEQUENCE_LENGTH))
+
+    prediction_output = []
+    for _ in range(num_notes):
+        idx = int(pattern[-1] if pattern else np.random.randint(0, len(note_to_int)))
+        # Small random walk around the current token for smoother transitions.
+        step = int(np.random.choice([-3, -2, -1, 0, 1, 2, 3]))
+        idx = max(0, min(idx + step, len(int_to_note) - 1))
         note_str = int_to_note.get(idx)
         if note_str is None:
             continue
@@ -392,15 +456,28 @@ def build_generated_song_bundle(seed_file_1=None, seed_file_2=None, num_notes=MO
     if assets is None:
         return None, load_err
 
-    notes = generate_song_with_model(
-        assets["model"],
-        assets["note_to_int"],
-        assets["int_to_note"],
-        seed_file_1,
-        seed_file_2,
-        int(num_notes),
-        float(temperature),
-    )
+    load_warning = assets.get("load_warning")
+
+    if assets.get("model") is not None:
+        notes = generate_song_with_model(
+            assets["model"],
+            assets["note_to_int"],
+            assets["int_to_note"],
+            seed_file_1,
+            seed_file_2,
+            int(num_notes),
+            float(temperature),
+        )
+    else:
+        notes = generate_song_without_model(
+            assets["note_to_int"],
+            assets["int_to_note"],
+            seed_file_1,
+            seed_file_2,
+            int(num_notes),
+        )
+        if load_warning is None:
+            load_warning = "Model was unavailable; used fallback generation."
 
     if not notes:
         return None, "Model generation returned no notes."
@@ -415,6 +492,7 @@ def build_generated_song_bundle(seed_file_1=None, seed_file_2=None, num_notes=MO
         "wav_bytes": wav_bytes,
         "mp3_bytes": mp3_bytes,
         "mp3_error": mp3_error,
+        "model_warning": load_warning,
     }, None
 
 def estimate_key_mode(chroma_mean):
@@ -718,6 +796,8 @@ elif page == "Remix / Compose Studio":
         compose_bundle = st.session_state.get("compose_song_bundle")
         if compose_bundle:
             st.subheader("Generated Composition")
+            if compose_bundle.get("model_warning"):
+                st.warning(f"Model compatibility warning: {compose_bundle['model_warning']}")
             st.audio(compose_bundle["audio_wave"], sample_rate=SYNTH_SAMPLE_RATE)
 
             if compose_bundle.get("mp3_bytes"):
@@ -806,6 +886,8 @@ elif page == "Remix / Compose Studio":
             remix_bundle = st.session_state.get("remix_song_bundle")
             if remix_bundle:
                 st.subheader("Generated Remix")
+                if remix_bundle.get("model_warning"):
+                    st.warning(f"Model compatibility warning: {remix_bundle['model_warning']}")
                 st.audio(remix_bundle["audio_wave"], sample_rate=SYNTH_SAMPLE_RATE)
 
                 if remix_bundle.get("mp3_bytes"):
