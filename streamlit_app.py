@@ -939,7 +939,7 @@ elif page == "Remix / Compose Studio":
                                 tmp_file.write(uploaded.getvalue())
                                 temp_paths.append(tmp_file.name)
 
-                        generation_temp = max(0.1, min(1.8, 0.4 + blend * 1.2))
+                        generation_temp = 1.0
                         render_bpm = 120.0 * float(tempo)
 
                         with st.spinner("Generating remix from uploaded MIDI files..."):
@@ -1029,7 +1029,7 @@ elif page == "Remix / Compose Studio":
                     seed_1 = midi_track_map.get(track1)
                     seed_2 = midi_track_map.get(track2)
 
-                    generation_temp = max(0.1, min(1.8, 0.4 + blend * 1.2))
+                    generation_temp = 1.0
                     render_bpm = 120.0 * float(tempo)
 
                     with st.spinner("Generating remix from selected MIDI seeds..."):
