@@ -424,11 +424,31 @@ def synthesize_prediction_audio(prediction_output, tempo_bpm=120.0, sample_rate=
     return audio
 
 def audio_to_wav_bytes(audio_wave, sample_rate=SYNTH_SAMPLE_RATE):
-    """Encode waveform as WAV bytes for download fallback."""
-    buffer = io.BytesIO()
-    sf.write(buffer, audio_wave, sample_rate, format="WAV")
-    buffer.seek(0)
-    return buffer.read()
+    """Encode waveform as WAV bytes, always returning plain bytes."""
+    try:
+        buffer = io.BytesIO()
+        sf.write(buffer, audio_wave, sample_rate, format="WAV")
+        buffer.seek(0)
+        return bytes(buffer.read())
+    except Exception:
+        # Pure-Python fallback: build a minimal PCM WAV header without soundfile.
+        pcm = np.clip(audio_wave, -1.0, 1.0)
+        pcm16 = (pcm * 32767.0).astype(np.int16)
+        pcm_bytes = pcm16.tobytes()
+        data_len = len(pcm_bytes)
+        header = (
+            b'RIFF' + (data_len + 36).to_bytes(4, 'little') +
+            b'WAVE' +
+            b'fmt ' + (16).to_bytes(4, 'little') +
+            (1).to_bytes(2, 'little') +          # PCM
+            (1).to_bytes(2, 'little') +          # mono
+            sample_rate.to_bytes(4, 'little') +  # sample rate
+            (sample_rate * 2).to_bytes(4, 'little') +  # byte rate
+            (2).to_bytes(2, 'little') +          # block align
+            (16).to_bytes(2, 'little') +         # bits per sample
+            b'data' + data_len.to_bytes(4, 'little')
+        )
+        return bytes(header + pcm_bytes)
 
 def audio_to_mp3_bytes(audio_wave, sample_rate=SYNTH_SAMPLE_RATE):
     """Encode waveform as MP3 bytes using lameenc when available."""
@@ -448,7 +468,9 @@ def audio_to_mp3_bytes(audio_wave, sample_rate=SYNTH_SAMPLE_RATE):
 
     mp3_data = encoder.encode(pcm16.tobytes())
     mp3_data += encoder.flush()
-    return mp3_data, None
+    # Ensure plain bytes — some lameenc versions return bytearray which
+    # Streamlit's download_button rejects on certain runtime versions.
+    return bytes(mp3_data), None
 
 def build_generated_song_bundle(seed_file_1=None, seed_file_2=None, num_notes=MODEL_NOTES_DEFAULT, temperature=0.8, render_tempo_bpm=120.0):
     """Generate notes from model and package playable/downloadable audio artifacts."""
@@ -798,25 +820,33 @@ elif page == "Remix / Compose Studio":
             st.subheader("Generated Composition")
             if compose_bundle.get("model_warning"):
                 st.warning(f"Model compatibility warning: {compose_bundle['model_warning']}")
-            st.audio(compose_bundle["audio_wave"], sample_rate=SYNTH_SAMPLE_RATE)
+            # Use pre-encoded WAV bytes for st.audio — compatible with all Streamlit versions.
+            _compose_wav = compose_bundle.get("wav_bytes")
+            if _compose_wav:
+                st.audio(_compose_wav, format="audio/wav")
 
-            if compose_bundle.get("mp3_bytes"):
+            _mp3 = compose_bundle.get("mp3_bytes")
+            _wav = compose_bundle.get("wav_bytes")
+            if _mp3 and isinstance(_mp3, bytes) and len(_mp3) > 0:
                 st.download_button(
                     "Download Composition (MP3)",
-                    data=compose_bundle["mp3_bytes"],
+                    data=_mp3,
                     file_name="composition.mp3",
                     mime="audio/mpeg",
                     key="compose_mp3_download",
                 )
-            else:
-                st.warning(compose_bundle.get("mp3_error", "MP3 export unavailable."))
+            elif _wav and isinstance(_wav, bytes) and len(_wav) > 0:
+                if compose_bundle.get("mp3_error"):
+                    st.warning(compose_bundle["mp3_error"])
                 st.download_button(
                     "Download Composition (WAV)",
-                    data=compose_bundle["wav_bytes"],
+                    data=_wav,
                     file_name="composition.wav",
                     mime="audio/wav",
                     key="compose_wav_download",
                 )
+            else:
+                st.warning("Audio export unavailable — no valid bytes to download.")
 
     # REMIX
     if mode == "Remix Songs":
@@ -888,25 +918,32 @@ elif page == "Remix / Compose Studio":
                 st.subheader("Generated Remix")
                 if remix_bundle.get("model_warning"):
                     st.warning(f"Model compatibility warning: {remix_bundle['model_warning']}")
-                st.audio(remix_bundle["audio_wave"], sample_rate=SYNTH_SAMPLE_RATE)
+                _remix_wav = remix_bundle.get("wav_bytes")
+                if _remix_wav:
+                    st.audio(_remix_wav, format="audio/wav")
 
-                if remix_bundle.get("mp3_bytes"):
+                _rmp3 = remix_bundle.get("mp3_bytes")
+                _rwav = remix_bundle.get("wav_bytes")
+                if _rmp3 and isinstance(_rmp3, bytes) and len(_rmp3) > 0:
                     st.download_button(
                         "Download Remix (MP3)",
-                        data=remix_bundle["mp3_bytes"],
+                        data=_rmp3,
                         file_name="remix.mp3",
                         mime="audio/mpeg",
                         key="remix_mp3_download_uploaded",
                     )
-                else:
-                    st.warning(remix_bundle.get("mp3_error", "MP3 export unavailable."))
+                elif _rwav and isinstance(_rwav, bytes) and len(_rwav) > 0:
+                    if remix_bundle.get("mp3_error"):
+                        st.warning(remix_bundle["mp3_error"])
                     st.download_button(
                         "Download Remix (WAV)",
-                        data=remix_bundle["wav_bytes"],
+                        data=_rwav,
                         file_name="remix.wav",
                         mime="audio/wav",
                         key="remix_wav_download_uploaded",
                     )
+                else:
+                    st.warning("Audio export unavailable — no valid bytes to download.")
         else:
             col1, col2 = st.columns(2)
 
@@ -954,25 +991,33 @@ elif page == "Remix / Compose Studio":
             remix_bundle = st.session_state.get("remix_song_bundle")
             if remix_bundle:
                 st.subheader("Generated Remix")
-                st.audio(remix_bundle["audio_wave"], sample_rate=SYNTH_SAMPLE_RATE)
-
-                if remix_bundle.get("mp3_bytes"):
+                if remix_bundle.get("model_warning"):
+                    st.warning(f"Model compatibility warning: {remix_bundle['model_warning']}")
+                _remix_wav2 = remix_bundle.get("wav_bytes")
+                if _remix_wav2:
+                    st.audio(_remix_wav2, format="audio/wav")
+                _rmp3b = remix_bundle.get("mp3_bytes")
+                _rwavb = remix_bundle.get("wav_bytes")
+                if _rmp3b and isinstance(_rmp3b, bytes) and len(_rmp3b) > 0:
                     st.download_button(
                         "Download Remix (MP3)",
-                        data=remix_bundle["mp3_bytes"],
+                        data=_rmp3b,
                         file_name="remix.mp3",
                         mime="audio/mpeg",
                         key="remix_mp3_download",
                     )
-                else:
-                    st.warning(remix_bundle.get("mp3_error", "MP3 export unavailable."))
+                elif _rwavb and isinstance(_rwavb, bytes) and len(_rwavb) > 0:
+                    if remix_bundle.get("mp3_error"):
+                        st.warning(remix_bundle["mp3_error"])
                     st.download_button(
                         "Download Remix (WAV)",
-                        data=remix_bundle["wav_bytes"],
+                        data=_rwavb,
                         file_name="remix.wav",
                         mime="audio/wav",
                         key="remix_wav_download",
                     )
+                else:
+                    st.warning("Audio export unavailable — no valid bytes to download.")
 
 # -----------------------------
 # RECOMMENDATIONS
