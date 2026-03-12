@@ -315,7 +315,9 @@ def sample_with_temp(preds, temperature=0.5):
 
 def generate_song_with_model(model, note_to_int, int_to_note, seed_file_path_1, seed_file_path_2, num_notes, temperature):
     """Generate symbolic notes using model logic aligned with generate_music.py."""
-    pattern = extract_seed_from_midi(seed_file_path_1, seed_file_path_2, note_to_int)
+    pattern = None
+    if seed_file_path_1 and seed_file_path_2 and os.path.exists(seed_file_path_1) and os.path.exists(seed_file_path_2):
+        pattern = extract_seed_from_midi(seed_file_path_1, seed_file_path_2, note_to_int)
     if pattern is None:
         pattern = list(np.random.randint(0, len(note_to_int), SEQUENCE_LENGTH))
 
@@ -336,7 +338,9 @@ def generate_song_with_model(model, note_to_int, int_to_note, seed_file_path_1, 
 
 def generate_song_without_model(note_to_int, int_to_note, seed_file_path_1, seed_file_path_2, num_notes):
     """Fallback generation when model loading fails in constrained runtimes."""
-    pattern = extract_seed_from_midi(seed_file_path_1, seed_file_path_2, note_to_int)
+    pattern = None
+    if seed_file_path_1 and seed_file_path_2 and os.path.exists(seed_file_path_1) and os.path.exists(seed_file_path_2):
+        pattern = extract_seed_from_midi(seed_file_path_1, seed_file_path_2, note_to_int)
     if pattern is None:
         pattern = list(np.random.randint(0, len(note_to_int), SEQUENCE_LENGTH))
 
@@ -355,6 +359,30 @@ def generate_song_without_model(note_to_int, int_to_note, seed_file_path_1, seed
         pattern = pattern[1:]
 
     return prediction_output
+
+def convert_to_midi(prediction_output, output_path):
+    """Convert generated note tokens to a MIDI file — matches generate_music.py logic."""
+    from music21 import note, chord, stream
+    output_stream = stream.Stream()
+    offset = 0
+    for pattern in prediction_output:
+        try:
+            parts = pattern.split('_')
+            note_data = parts[0]
+            duration = float(parts[1])
+            if "." in note_data:
+                new_obj = chord.Chord(note_data.split("."))
+            elif note_data == "rest":
+                new_obj = note.Rest()
+            else:
+                new_obj = note.Note(note_data)
+            new_obj.offset = offset
+            new_obj.duration.quarterLength = duration
+            output_stream.append(new_obj)
+            offset += duration
+        except Exception:
+            continue
+    output_stream.write("midi", fp=output_path)
 
 def parse_note_token_to_hz(token):
     """Convert model note token to frequency in Hz."""
@@ -508,12 +536,25 @@ def build_generated_song_bundle(seed_file_1=None, seed_file_2=None, num_notes=MO
     wav_bytes = audio_to_wav_bytes(audio_wave, sample_rate=SYNTH_SAMPLE_RATE)
     mp3_bytes, mp3_error = audio_to_mp3_bytes(audio_wave, sample_rate=SYNTH_SAMPLE_RATE)
 
+    midi_bytes = None
+    try:
+        import tempfile
+        with tempfile.NamedTemporaryFile(suffix=".mid", delete=False) as tmp:
+            tmp_path = tmp.name
+        convert_to_midi(notes, tmp_path)
+        with open(tmp_path, "rb") as f:
+            midi_bytes = bytes(f.read())
+        os.remove(tmp_path)
+    except Exception:
+        pass
+
     return {
         "notes": notes,
         "audio_wave": audio_wave,
         "wav_bytes": wav_bytes,
         "mp3_bytes": mp3_bytes,
         "mp3_error": mp3_error,
+        "midi_bytes": midi_bytes,
         "model_warning": load_warning,
     }, None
 
@@ -847,6 +888,15 @@ elif page == "Remix / Compose Studio":
                 )
             else:
                 st.warning("Audio export unavailable — no valid bytes to download.")
+            _compose_mid = compose_bundle.get("midi_bytes")
+            if _compose_mid and isinstance(_compose_mid, bytes) and len(_compose_mid) > 0:
+                st.download_button(
+                    "Download Composition (MIDI)",
+                    data=_compose_mid,
+                    file_name="composition.mid",
+                    mime="audio/midi",
+                    key="compose_midi_download",
+                )
 
     # REMIX
     if mode == "Remix Songs":
@@ -944,6 +994,15 @@ elif page == "Remix / Compose Studio":
                     )
                 else:
                     st.warning("Audio export unavailable — no valid bytes to download.")
+                _remix_mid_up = remix_bundle.get("midi_bytes")
+                if _remix_mid_up and isinstance(_remix_mid_up, bytes) and len(_remix_mid_up) > 0:
+                    st.download_button(
+                        "Download Remix (MIDI)",
+                        data=_remix_mid_up,
+                        file_name="remix.mid",
+                        mime="audio/midi",
+                        key="remix_midi_download_uploaded",
+                    )
         else:
             col1, col2 = st.columns(2)
 
@@ -1018,6 +1077,15 @@ elif page == "Remix / Compose Studio":
                     )
                 else:
                     st.warning("Audio export unavailable — no valid bytes to download.")
+                _remix_mid = remix_bundle.get("midi_bytes")
+                if _remix_mid and isinstance(_remix_mid, bytes) and len(_remix_mid) > 0:
+                    st.download_button(
+                        "Download Remix (MIDI)",
+                        data=_remix_mid,
+                        file_name="remix.mid",
+                        mime="audio/midi",
+                        key="remix_midi_download",
+                    )
 
 # -----------------------------
 # RECOMMENDATIONS
