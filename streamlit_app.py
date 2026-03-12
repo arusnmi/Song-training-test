@@ -9,9 +9,12 @@ import plotly.graph_objects as go
 import plotly.express as px
 from recommendation_engine import RecommendationEngine, GeminiExplainer
 import os
+import io
+import pickle
 from pathlib import Path
 from collections import Counter
 import re
+import soundfile as sf
 
 # -----------------------------
 # PAGE CONFIG
@@ -67,26 +70,317 @@ def load_gemini_explainer():
     api_key = st.secrets.get("GEMINI_API_KEY", None) if hasattr(st, 'secrets') else None
     return GeminiExplainer(api_key)
 
-@st.cache_data
-def load_midi_tracks():
-    """Return available MIDI song names from the local Midi_files folder."""
+def find_midi_directory():
+    """Find the project's MIDI folder across common execution directories."""
     script_dir = Path(__file__).resolve().parent
     cwd_dir = Path.cwd().resolve()
 
-    midi_candidates = [
-        script_dir / "Midi_files",
-        cwd_dir / "Midi_files",
+    search_roots = [script_dir, cwd_dir, script_dir.parent, cwd_dir.parent]
+    midi_dir = None
+
+    for root in search_roots:
+        for folder_name in ("Midi_files", "midi_files", "MIDI_files"):
+            candidate = root / folder_name
+            if candidate.exists() and candidate.is_dir():
+                midi_dir = candidate
+                break
+        if midi_dir is not None:
+            break
+
+    if midi_dir is None:
+        for root in search_roots:
+            if not root.exists() or not root.is_dir():
+                continue
+            for child in root.iterdir():
+                if child.is_dir() and child.name.lower() == "midi_files":
+                    midi_dir = child
+                    break
+            if midi_dir is not None:
+                break
+
+    return midi_dir
+
+def get_midi_track_map():
+    """Return mapping of MIDI filename -> absolute path."""
+    midi_dir = find_midi_directory()
+    if midi_dir is None:
+        return {}
+
+    midi_files = [
+        midi_file for midi_file in midi_dir.rglob("*")
+        if midi_file.is_file() and midi_file.suffix.lower() in {".mid", ".midi"}
     ]
 
-    midi_dir = next((p for p in midi_candidates if p.exists() and p.is_dir()), None)
-    if midi_dir is None:
-        return []
+    track_map = {}
+    for midi_file in sorted(midi_files):
+        key_name = midi_file.name
+        if key_name in track_map:
+            key_name = str(midi_file.relative_to(midi_dir)).replace("\\", "/")
+        track_map[key_name] = str(midi_file.resolve())
+    return track_map
 
-    midi_files = []
-    for pattern in ("*.mid", "*.midi"):
-        midi_files.extend(midi_dir.glob(pattern))
+def load_midi_tracks():
+    """Return available MIDI song names from the local Midi_files folder."""
+    return sorted(get_midi_track_map().keys())
 
-    return sorted({midi_file.name for midi_file in midi_files})
+GRID = 0.25
+SEQUENCE_LENGTH = 100
+MODEL_NOTES_DEFAULT = 320
+SYNTH_SAMPLE_RATE = 22050
+
+@st.cache_resource
+def load_generation_assets():
+    """Load generation model and token mappings used by generate_music.py logic."""
+    base_dir = Path(__file__).resolve().parent
+    data_dir = base_dir / "model_data"
+
+    model_file = data_dir / "music_model_200.h5"
+    mapping_file = data_dir / "note_to_int.pkl"
+
+    if not model_file.exists():
+        return None, f"Model file missing: {model_file}"
+    if not mapping_file.exists():
+        return None, f"Mapping file missing: {mapping_file}"
+
+    try:
+        from tensorflow.keras.models import load_model
+    except Exception as exc:
+        return None, f"TensorFlow unavailable: {exc}"
+
+    try:
+        with open(mapping_file, "rb") as f:
+            note_to_int = pickle.load(f)
+        int_to_note = {i: n for n, i in note_to_int.items()}
+        model = load_model(str(model_file))
+    except Exception as exc:
+        return None, f"Failed loading generation assets: {exc}"
+
+    return {
+        "model": model,
+        "note_to_int": note_to_int,
+        "int_to_note": int_to_note,
+    }, None
+
+def quantize(duration):
+    return round(duration / GRID) * GRID
+
+def transpose_score_to_c_or_a(score):
+    """Normalize seed score key to C major / A minor."""
+    try:
+        from music21 import interval, pitch
+        key = score.analyze('key')
+        if key.mode == "major":
+            target_tonic = pitch.Pitch('C')
+        elif key.mode == "minor":
+            target_tonic = pitch.Pitch('A')
+        else:
+            return score
+        itvl = interval.Interval(key.tonic, target_tonic)
+        return score.transpose(itvl)
+    except Exception:
+        return score
+
+def extract_seed_from_midi(seed_path_1, seed_path_2, note_to_int):
+    """Mirror seed extraction behavior from generate_music.py for remix seeding."""
+    try:
+        from music21 import converter, note, chord
+    except Exception:
+        return None
+
+    midi_files = [seed_path_1, seed_path_2]
+    for path in midi_files:
+        if not path or not os.path.exists(path):
+            continue
+
+        try:
+            score = converter.parse(path)
+            score = transpose_score_to_c_or_a(score)
+            extracted = []
+
+            for element in score.flatten().notesAndRests:
+                duration = quantize(element.duration.quarterLength)
+                if duration <= 0:
+                    continue
+
+                if isinstance(element, note.Note):
+                    tag = f"{element.pitch}_{duration}"
+                elif isinstance(element, chord.Chord):
+                    pitches = ".".join(str(p) for p in sorted(element.pitches))
+                    tag = f"{pitches}_{duration}"
+                elif isinstance(element, note.Rest) and duration >= 0.5:
+                    tag = f"rest_{duration}"
+                else:
+                    continue
+                extracted.append(tag)
+
+            extracted = [n for n in extracted if n in note_to_int]
+            if len(extracted) < SEQUENCE_LENGTH:
+                continue
+
+            start = np.random.randint(0, len(extracted) - SEQUENCE_LENGTH)
+            return [note_to_int[n] for n in extracted[start:start + SEQUENCE_LENGTH]]
+        except Exception:
+            continue
+
+    return None
+
+def sample_with_temp(preds, temperature=0.5):
+    """Weighted sampling to avoid repetitive notes."""
+    if temperature <= 0:
+        return int(np.argmax(preds))
+
+    preds = np.asarray(preds).astype('float64')
+    preds = np.log(preds + 1e-7) / max(temperature, 1e-6)
+    exp_preds = np.exp(preds)
+    preds = exp_preds / np.sum(exp_preds)
+    probas = np.random.multinomial(1, preds, 1)
+    return int(np.argmax(probas))
+
+def generate_song_with_model(model, note_to_int, int_to_note, seed_file_path_1, seed_file_path_2, num_notes, temperature):
+    """Generate symbolic notes using model logic aligned with generate_music.py."""
+    pattern = extract_seed_from_midi(seed_file_path_1, seed_file_path_2, note_to_int)
+    if pattern is None:
+        pattern = list(np.random.randint(0, len(note_to_int), SEQUENCE_LENGTH))
+
+    prediction_output = []
+    for _ in range(num_notes):
+        input_seq = np.reshape(pattern, (1, SEQUENCE_LENGTH))
+        prediction = model.predict(input_seq, verbose=0)[0]
+        idx = sample_with_temp(prediction, temperature)
+        note_str = int_to_note.get(idx)
+        if note_str is None:
+            continue
+
+        prediction_output.append(note_str)
+        pattern.append(idx)
+        pattern = pattern[1:]
+
+    return prediction_output
+
+def parse_note_token_to_hz(token):
+    """Convert model note token to frequency in Hz."""
+    token = str(token).strip()
+    if not token:
+        return None
+
+    try:
+        if token.isdigit():
+            return float(librosa.midi_to_hz(int(token)))
+        return float(librosa.note_to_hz(token))
+    except Exception:
+        return None
+
+def synthesize_prediction_audio(prediction_output, tempo_bpm=120.0, sample_rate=SYNTH_SAMPLE_RATE):
+    """Render generated symbolic notes to playable waveform for Streamlit audio."""
+    seconds_per_quarter = 60.0 / max(tempo_bpm, 1.0)
+    chunks = []
+
+    for pattern in prediction_output:
+        if "_" not in pattern:
+            continue
+
+        note_data, duration_str = pattern.rsplit("_", 1)
+        try:
+            quarter_len = max(float(duration_str), GRID)
+        except Exception:
+            quarter_len = GRID
+
+        event_seconds = quarter_len * seconds_per_quarter
+        n_samples = max(int(event_seconds * sample_rate), 1)
+        t = np.linspace(0, event_seconds, n_samples, endpoint=False)
+
+        if note_data == "rest":
+            chunk = np.zeros(n_samples, dtype=np.float32)
+        else:
+            freqs = [
+                parse_note_token_to_hz(token)
+                for token in str(note_data).split(".")
+            ]
+            freqs = [f for f in freqs if f is not None]
+
+            if not freqs:
+                chunk = np.zeros(n_samples, dtype=np.float32)
+            else:
+                wave = np.zeros_like(t, dtype=np.float32)
+                for freq in freqs:
+                    wave += np.sin(2 * np.pi * float(freq) * t).astype(np.float32)
+
+                wave /= max(len(freqs), 1)
+                attack_len = max(int(0.01 * sample_rate), 1)
+                release_len = max(int(0.02 * sample_rate), 1)
+                env = np.ones(n_samples, dtype=np.float32)
+                env[:attack_len] = np.linspace(0, 1, attack_len, dtype=np.float32)
+                env[-release_len:] = np.linspace(1, 0, release_len, dtype=np.float32)
+                chunk = wave * env * 0.25
+
+        chunks.append(chunk)
+
+    if not chunks:
+        return np.zeros(sample_rate, dtype=np.float32)
+
+    audio = np.concatenate(chunks).astype(np.float32)
+    peak = float(np.max(np.abs(audio))) if audio.size else 0.0
+    if peak > 0:
+        audio = audio / peak * 0.9
+    return audio
+
+def audio_to_wav_bytes(audio_wave, sample_rate=SYNTH_SAMPLE_RATE):
+    """Encode waveform as WAV bytes for download fallback."""
+    buffer = io.BytesIO()
+    sf.write(buffer, audio_wave, sample_rate, format="WAV")
+    buffer.seek(0)
+    return buffer.read()
+
+def audio_to_mp3_bytes(audio_wave, sample_rate=SYNTH_SAMPLE_RATE):
+    """Encode waveform as MP3 bytes using lameenc when available."""
+    try:
+        import lameenc
+    except Exception as exc:
+        return None, f"MP3 encoder unavailable ({exc}). Install 'lameenc' to enable MP3 downloads."
+
+    pcm16 = np.clip(audio_wave, -1.0, 1.0)
+    pcm16 = (pcm16 * 32767.0).astype(np.int16)
+
+    encoder = lameenc.Encoder()
+    encoder.set_bit_rate(192)
+    encoder.set_in_sample_rate(sample_rate)
+    encoder.set_channels(1)
+    encoder.set_quality(2)
+
+    mp3_data = encoder.encode(pcm16.tobytes())
+    mp3_data += encoder.flush()
+    return mp3_data, None
+
+def build_generated_song_bundle(seed_file_1=None, seed_file_2=None, num_notes=MODEL_NOTES_DEFAULT, temperature=0.8, render_tempo_bpm=120.0):
+    """Generate notes from model and package playable/downloadable audio artifacts."""
+    assets, load_err = load_generation_assets()
+    if assets is None:
+        return None, load_err
+
+    notes = generate_song_with_model(
+        assets["model"],
+        assets["note_to_int"],
+        assets["int_to_note"],
+        seed_file_1,
+        seed_file_2,
+        int(num_notes),
+        float(temperature),
+    )
+
+    if not notes:
+        return None, "Model generation returned no notes."
+
+    audio_wave = synthesize_prediction_audio(notes, tempo_bpm=render_tempo_bpm, sample_rate=SYNTH_SAMPLE_RATE)
+    wav_bytes = audio_to_wav_bytes(audio_wave, sample_rate=SYNTH_SAMPLE_RATE)
+    mp3_bytes, mp3_error = audio_to_mp3_bytes(audio_wave, sample_rate=SYNTH_SAMPLE_RATE)
+
+    return {
+        "notes": notes,
+        "audio_wave": audio_wave,
+        "wav_bytes": wav_bytes,
+        "mp3_bytes": mp3_bytes,
+        "mp3_error": mp3_error,
+    }, None
 
 def estimate_key_mode(chroma_mean):
     """Estimate musical key and mode from an averaged chroma profile."""
@@ -364,21 +658,56 @@ elif page == "Remix / Compose Studio":
     else:
         dataset = []
 
-    midi_dataset = load_midi_tracks()
+    midi_track_map = get_midi_track_map()
+    midi_dataset = sorted(midi_track_map.keys())
 
     # COMPOSE
     if mode == "Compose (AI Generated)":
 
-        st.write("Generate music using a random seed from dataset")
+        st.write("Generate music from the trained model logic in generate_music.py")
 
-        if not dataset:
-            st.info("⚠️ No track data available. Ensure the CSVs are present in the repository root.")
-        else:
-            if st.button("Generate Composition"):
-                seed_song = random.choice(dataset)
-                st.success(f"Seed song selected: {seed_song}")
-                st.audio(
-                    "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"
+        comp_col1, comp_col2, comp_col3 = st.columns(3)
+        with comp_col1:
+            compose_num_notes = st.slider("Generated Notes", 120, 800, 320, key="compose_num_notes")
+        with comp_col2:
+            compose_temperature = st.slider("Creativity (Temperature)", 0.1, 1.8, 0.9, 0.1, key="compose_temperature")
+        with comp_col3:
+            compose_tempo = st.slider("Playback Tempo (BPM)", 70, 180, 120, key="compose_tempo")
+
+        if st.button("Generate Composition"):
+            with st.spinner("Generating composition from model..."):
+                bundle, err = build_generated_song_bundle(
+                    num_notes=compose_num_notes,
+                    temperature=compose_temperature,
+                    render_tempo_bpm=float(compose_tempo),
+                )
+            if err:
+                st.error(f"Generation failed: {err}")
+            else:
+                st.session_state["compose_song_bundle"] = bundle
+                st.success("Composition generated successfully.")
+
+        compose_bundle = st.session_state.get("compose_song_bundle")
+        if compose_bundle:
+            st.subheader("Generated Composition")
+            st.audio(compose_bundle["audio_wave"], sample_rate=SYNTH_SAMPLE_RATE)
+
+            if compose_bundle.get("mp3_bytes"):
+                st.download_button(
+                    "Download Composition (MP3)",
+                    data=compose_bundle["mp3_bytes"],
+                    file_name="composition.mp3",
+                    mime="audio/mpeg",
+                    key="compose_mp3_download",
+                )
+            else:
+                st.warning(compose_bundle.get("mp3_error", "MP3 export unavailable."))
+                st.download_button(
+                    "Download Composition (WAV)",
+                    data=compose_bundle["wav_bytes"],
+                    file_name="composition.wav",
+                    mime="audio/wav",
+                    key="compose_wav_download",
                 )
 
     # REMIX
@@ -409,9 +738,48 @@ elif page == "Remix / Compose Studio":
                 elif track1 == track2:
                     st.error("Track 1 and Track 2 must be different songs.")
                 else:
-                    st.success(f"Remixed {track1} and {track2}")
-                    st.audio(
-                        "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"
+                    seed_1 = midi_track_map.get(track1)
+                    seed_2 = midi_track_map.get(track2)
+
+                    generation_temp = max(0.1, min(1.8, 0.4 + blend * 1.2))
+                    render_bpm = 120.0 * float(tempo)
+
+                    with st.spinner("Generating remix from selected MIDI seeds..."):
+                        bundle, err = build_generated_song_bundle(
+                            seed_file_1=seed_1,
+                            seed_file_2=seed_2,
+                            num_notes=MODEL_NOTES_DEFAULT,
+                            temperature=generation_temp,
+                            render_tempo_bpm=render_bpm,
+                        )
+
+                    if err:
+                        st.error(f"Remix generation failed: {err}")
+                    else:
+                        st.session_state["remix_song_bundle"] = bundle
+                        st.success(f"Remixed {track1} and {track2}")
+
+            remix_bundle = st.session_state.get("remix_song_bundle")
+            if remix_bundle:
+                st.subheader("Generated Remix")
+                st.audio(remix_bundle["audio_wave"], sample_rate=SYNTH_SAMPLE_RATE)
+
+                if remix_bundle.get("mp3_bytes"):
+                    st.download_button(
+                        "Download Remix (MP3)",
+                        data=remix_bundle["mp3_bytes"],
+                        file_name="remix.mp3",
+                        mime="audio/mpeg",
+                        key="remix_mp3_download",
+                    )
+                else:
+                    st.warning(remix_bundle.get("mp3_error", "MP3 export unavailable."))
+                    st.download_button(
+                        "Download Remix (WAV)",
+                        data=remix_bundle["wav_bytes"],
+                        file_name="remix.wav",
+                        mime="audio/wav",
+                        key="remix_wav_download",
                     )
 
 # -----------------------------
