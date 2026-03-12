@@ -71,9 +71,25 @@ def load_gemini_explainer():
     return GeminiExplainer(api_key)
 
 def find_midi_directory():
-    """Find the project's MIDI folder across common execution directories."""
+    """Find the project's MIDI folder across local and cloud execution directories."""
     script_dir = Path(__file__).resolve().parent
     cwd_dir = Path.cwd().resolve()
+
+    explicit_candidates = [
+        # User-provided local directory
+        Path(r"c:\Users\warty\OneDrive\Desktop\Python_projects\Song-training-test\Midi_files"),
+        # Streamlit Cloud mount paths
+        Path("/mount/src/song-training-test/Midi_files"),
+        Path("/mount/src/song-training-test/midi_files"),
+    ]
+
+    env_hint = os.getenv("MIDI_FILES_DIR")
+    if env_hint:
+        explicit_candidates.insert(0, Path(env_hint))
+
+    for candidate in explicit_candidates:
+        if candidate.exists() and candidate.is_dir():
+            return candidate
 
     search_roots = [script_dir, cwd_dir, script_dir.parent, cwd_dir.parent]
     midi_dir = None
@@ -99,6 +115,24 @@ def find_midi_directory():
                 break
 
     return midi_dir
+
+def get_midi_search_locations():
+    """Return all MIDI folder locations checked for troubleshooting."""
+    script_dir = Path(__file__).resolve().parent
+    cwd_dir = Path.cwd().resolve()
+
+    locations = [
+        os.getenv("MIDI_FILES_DIR", ""),
+        r"c:\Users\warty\OneDrive\Desktop\Python_projects\Song-training-test\Midi_files",
+        "/mount/src/song-training-test/Midi_files",
+        "/mount/src/song-training-test/midi_files",
+        str(script_dir / "Midi_files"),
+        str(cwd_dir / "Midi_files"),
+        str(script_dir.parent / "Midi_files"),
+        str(cwd_dir.parent / "Midi_files"),
+    ]
+
+    return [loc for loc in locations if loc]
 
 def get_midi_track_map():
     """Return mapping of MIDI filename -> absolute path."""
@@ -708,6 +742,10 @@ elif page == "Remix / Compose Studio":
 
         if not midi_dataset:
             st.info("⚠️ No MIDI songs found in the Midi_files folder.")
+            with st.expander("Checked MIDI directories"):
+                for checked_path in get_midi_search_locations():
+                    st.write(f"- {checked_path}")
+                st.caption("Set MIDI_FILES_DIR in environment variables to override the folder path.")
         else:
             col1, col2 = st.columns(2)
 
