@@ -88,6 +88,93 @@ def load_midi_tracks():
 
     return sorted({midi_file.name for midi_file in midi_files})
 
+def estimate_key_mode(chroma_mean):
+    """Estimate musical key and mode from an averaged chroma profile."""
+    key_names = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+    major_profile = np.array([6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88])
+    minor_profile = np.array([6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17])
+
+    chroma_vector = np.array(chroma_mean, dtype=float)
+    if chroma_vector.shape[0] != 12:
+        return "Unknown", "Unknown"
+
+    major_scores = [np.dot(chroma_vector, np.roll(major_profile, i)) for i in range(12)]
+    minor_scores = [np.dot(chroma_vector, np.roll(minor_profile, i)) for i in range(12)]
+
+    best_major_idx = int(np.argmax(major_scores))
+    best_minor_idx = int(np.argmax(minor_scores))
+
+    if major_scores[best_major_idx] >= minor_scores[best_minor_idx]:
+        return key_names[best_major_idx], "major"
+    return key_names[best_minor_idx], "minor"
+
+def analyze_audio_features(y, sr):
+    """Compute song-level audio stats used across preprocessing and UI."""
+    duration_sec = float(librosa.get_duration(y=y, sr=sr))
+
+    tempo_estimate, _ = librosa.beat.beat_track(y=y, sr=sr)
+    if isinstance(tempo_estimate, np.ndarray):
+        tempo_bpm = float(tempo_estimate.squeeze()) if tempo_estimate.size else 0.0
+    else:
+        tempo_bpm = float(tempo_estimate)
+
+    rms = librosa.feature.rms(y=y)
+    energy = float(np.mean(rms))
+    zcr = float(np.mean(librosa.feature.zero_crossing_rate(y=y)))
+    centroids = librosa.feature.spectral_centroid(y=y, sr=sr)
+    centroid_mean = float(np.mean(np.abs(centroids)))
+
+    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
+    mfcc_mean = float(np.mean(np.abs(mfcc)))
+
+    chroma = librosa.feature.chroma_stft(y=y, sr=sr)
+    chroma_mean = np.mean(chroma, axis=1)
+    chroma_mean_scalar = float(np.mean(np.abs(chroma)))
+
+    amplitude = np.maximum(np.abs(y), 1e-9)
+    loudness = float(np.mean(librosa.amplitude_to_db(amplitude, ref=1.0)))
+
+    key_name, mode_name = estimate_key_mode(chroma_mean)
+
+    return {
+        "duration_sec": duration_sec,
+        "sample_rate": int(sr),
+        "tempo": tempo_bpm,
+        "energy": energy,
+        "loudness": loudness,
+        "zcr": zcr,
+        "centroid_mean": centroid_mean,
+        "mfcc_mean": mfcc_mean,
+        "chroma_mean": chroma_mean_scalar,
+        "key": key_name,
+        "mode": mode_name,
+    }
+
+def infer_mood_and_instruments(stats):
+    """Simple rule-based labels from extracted audio features."""
+    tempo = stats["tempo"]
+    energy = stats["energy"]
+    centroid = stats["centroid_mean"]
+    zcr = stats["zcr"]
+
+    if tempo >= 130 and energy >= 0.08:
+        mood = "Energetic"
+    elif tempo <= 90 and energy <= 0.04:
+        mood = "Calm"
+    elif stats["mode"] == "minor":
+        mood = "Moody"
+    else:
+        mood = "Balanced"
+
+    if centroid >= 2500 and zcr >= 0.08:
+        instruments = "Likely drums/percussion + bright synths"
+    elif centroid <= 1200:
+        instruments = "Likely piano/strings + low-mid instruments"
+    else:
+        instruments = "Likely mixed band setup (guitar/keys/vocals)"
+
+    return mood, instruments
+
 # Initialize feedback database (in-memory for demo)
 @st.cache_resource
 def initialize_feedback_db():
@@ -512,35 +599,71 @@ elif page == "Mood & Instrument Analyzer":
 
     file = st.file_uploader(
         "Upload Song",
-        type=["mp3", "wav"]
+        type=["mp3", "wav", "ogg", "flac"]
     )
 
     if file is not None:
-
-        y, sr = librosa.load(file)
-
         st.audio(file)
+        st.caption(f"Selected file: {file.name}")
 
-        if st.button("Generate Spectrogram"):
+        if st.button("Analyze Song"):
+            file.seek(0)
+            with st.spinner("Extracting song features and building mel spectrogram..."):
+                y, sr = librosa.load(file, sr=None, mono=True)
+                stats = analyze_audio_features(y, sr)
+                detected_mood, detected_instruments = infer_mood_and_instruments(stats)
+                mel = librosa.feature.melspectrogram(
+                    y=y,
+                    sr=sr,
+                    n_fft=2048,
+                    hop_length=512,
+                    n_mels=128
+                )
+                mel_db = librosa.power_to_db(mel, ref=np.max)
 
-            mel = librosa.feature.melspectrogram(y=y, sr=sr)
+            st.subheader("📈 Song Statistics")
+            m1, m2, m3, m4 = st.columns(4)
+            with m1:
+                st.metric("Tempo (BPM)", f"{stats['tempo']:.1f}")
+            with m2:
+                st.metric("Estimated Key", stats["key"])
+            with m3:
+                st.metric("Mode", stats["mode"].title())
+            with m4:
+                st.metric("Duration (sec)", f"{stats['duration_sec']:.1f}")
 
-            fig, ax = plt.subplots()
+            s1, s2, s3, s4 = st.columns(4)
+            with s1:
+                st.metric("Energy (RMS)", f"{stats['energy']:.4f}")
+            with s2:
+                st.metric("Loudness (dB)", f"{stats['loudness']:.2f}")
+            with s3:
+                st.metric("MFCC Mean", f"{stats['mfcc_mean']:.2f}")
+            with s4:
+                st.metric("Chroma Mean", f"{stats['chroma_mean']:.2f}")
 
+            with st.expander("More extracted stats"):
+                st.write(f"Sample Rate: {stats['sample_rate']} Hz")
+                st.write(f"Zero Crossing Rate: {stats['zcr']:.4f}")
+                st.write(f"Spectral Centroid Mean: {stats['centroid_mean']:.2f}")
+
+            st.subheader("🎨 Mel Spectrogram")
+            fig, ax = plt.subplots(figsize=(10, 4))
             librosa.display.specshow(
-                librosa.power_to_db(mel),
+                mel_db,
                 sr=sr,
+                hop_length=512,
                 x_axis="time",
                 y_axis="mel",
                 ax=ax
             )
-
             ax.set_title("Mel Spectrogram")
-
+            plt.tight_layout()
             st.pyplot(fig)
 
-            st.write("Detected Mood: Energetic")
-            st.write("Detected Instruments: Piano, Drums")
+            st.subheader("🧠 Analyzer Inference")
+            st.write(f"Detected Mood: {detected_mood}")
+            st.write(f"Detected Instruments: {detected_instruments}")
 
 # -----------------------------
 # ANALYTICS
