@@ -146,7 +146,12 @@ def load_generation_model(model_file):
         except Exception as exc:
             load_errors.append(f"Legacy H5 compatibility loader failed: {exc}")
 
-    load_warning = " | ".join(load_errors) if load_errors else None
+    # If any loader succeeded, suppress prior fallback errors caused by
+    # legacy format differences so the app does not show a false failure.
+    if model is not None:
+        load_warning = None
+    else:
+        load_warning = " | ".join(load_errors) if load_errors else None
     return model, load_warning
 
 
