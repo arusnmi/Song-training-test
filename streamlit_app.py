@@ -160,7 +160,7 @@ def load_midi_tracks():
 
 GRID = 0.25
 SEQUENCE_LENGTH = 100
-MODEL_NOTES_DEFAULT = 320
+MODEL_NOTES_DEFAULT = 400
 SYNTH_SAMPLE_RATE = 22050
 
 @st.cache_resource
@@ -500,34 +500,25 @@ def audio_to_mp3_bytes(audio_wave, sample_rate=SYNTH_SAMPLE_RATE):
     # Streamlit's download_button rejects on certain runtime versions.
     return bytes(mp3_data), None
 
-def build_generated_song_bundle(seed_file_1=None, seed_file_2=None, num_notes=MODEL_NOTES_DEFAULT, temperature=0.8, render_tempo_bpm=120.0):
+def build_generated_song_bundle(seed_file_1=None, seed_file_2=None, num_notes=MODEL_NOTES_DEFAULT, temperature=1.0, render_tempo_bpm=120.0):
     """Generate notes from model and package playable/downloadable audio artifacts."""
     assets, load_err = load_generation_assets()
     if assets is None:
         return None, load_err
 
-    load_warning = assets.get("load_warning")
+    model = assets.get("model")
+    if model is None:
+        return None, "Generation model is unavailable in this runtime."
 
-    if assets.get("model") is not None:
-        notes = generate_song_with_model(
-            assets["model"],
-            assets["note_to_int"],
-            assets["int_to_note"],
-            seed_file_1,
-            seed_file_2,
-            int(num_notes),
-            float(temperature),
-        )
-    else:
-        notes = generate_song_without_model(
-            assets["note_to_int"],
-            assets["int_to_note"],
-            seed_file_1,
-            seed_file_2,
-            int(num_notes),
-        )
-        if load_warning is None:
-            load_warning = "Model was unavailable; used fallback generation."
+    notes = generate_song_with_model(
+        model,
+        assets["note_to_int"],
+        assets["int_to_note"],
+        seed_file_1,
+        seed_file_2,
+        int(num_notes),
+        float(temperature),
+    )
 
     if not notes:
         return None, "Model generation returned no notes."
@@ -555,7 +546,6 @@ def build_generated_song_bundle(seed_file_1=None, seed_file_2=None, num_notes=MO
         "mp3_bytes": mp3_bytes,
         "mp3_error": mp3_error,
         "midi_bytes": midi_bytes,
-        "model_warning": load_warning,
     }, None
 
 def estimate_key_mode(chroma_mean):
@@ -837,9 +827,9 @@ elif page == "Remix / Compose Studio":
 
         comp_col1, comp_col2, comp_col3 = st.columns(3)
         with comp_col1:
-            compose_num_notes = st.slider("Generated Notes", 120, 800, 320, key="compose_num_notes")
+            compose_num_notes = st.slider("Generated Notes", 120, 800, MODEL_NOTES_DEFAULT, key="compose_num_notes")
         with comp_col2:
-            compose_temperature = st.slider("Creativity (Temperature)", 0.1, 1.8, 0.9, 0.1, key="compose_temperature")
+            compose_temperature = st.slider("Creativity (Temperature)", 0.2, 1.4, 1.0, 0.05, key="compose_temperature")
         with comp_col3:
             compose_tempo = st.slider("Playback Tempo (BPM)", 70, 180, 120, key="compose_tempo")
 
@@ -859,8 +849,6 @@ elif page == "Remix / Compose Studio":
         compose_bundle = st.session_state.get("compose_song_bundle")
         if compose_bundle:
             st.subheader("Generated Composition")
-            if compose_bundle.get("model_warning"):
-                st.warning(f"Model compatibility warning: {compose_bundle['model_warning']}")
             # Use pre-encoded WAV bytes for st.audio — compatible with all Streamlit versions.
             _compose_wav = compose_bundle.get("wav_bytes")
             if _compose_wav:
@@ -966,8 +954,6 @@ elif page == "Remix / Compose Studio":
             remix_bundle = st.session_state.get("remix_song_bundle")
             if remix_bundle:
                 st.subheader("Generated Remix")
-                if remix_bundle.get("model_warning"):
-                    st.warning(f"Model compatibility warning: {remix_bundle['model_warning']}")
                 _remix_wav = remix_bundle.get("wav_bytes")
                 if _remix_wav:
                     st.audio(_remix_wav, format="audio/wav")
@@ -1050,8 +1036,6 @@ elif page == "Remix / Compose Studio":
             remix_bundle = st.session_state.get("remix_song_bundle")
             if remix_bundle:
                 st.subheader("Generated Remix")
-                if remix_bundle.get("model_warning"):
-                    st.warning(f"Model compatibility warning: {remix_bundle['model_warning']}")
                 _remix_wav2 = remix_bundle.get("wav_bytes")
                 if _remix_wav2:
                     st.audio(_remix_wav2, format="audio/wav")
