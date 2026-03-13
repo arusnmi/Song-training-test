@@ -873,7 +873,8 @@ elif page == "Remix / Compose Studio":
         with comp_col1:
             compose_num_notes = st.slider("Generated Notes", 120, 800, MODEL_NOTES_DEFAULT, key="compose_num_notes")
         with comp_col2:
-            compose_temperature = st.slider("Creativity (Temperature)", 0.2, 1.4, 1.0, 0.05, key="compose_temperature")
+            compose_temperature = 1.0
+            st.caption("Temperature is fixed at 1.0")
         with comp_col3:
             compose_tempo = st.slider("Playback Tempo (BPM)", 70, 180, 120, key="compose_tempo")
 
