@@ -162,10 +162,13 @@ GRID = 0.25
 SEQUENCE_LENGTH = 100
 MODEL_NOTES_DEFAULT = 400
 SYNTH_SAMPLE_RATE = 22050
+GENERATION_LOADER_CACHE_VERSION = "2026-03-13-legacy-loader-fix"
 
 @st.cache_resource
-def load_generation_assets():
+def load_generation_assets(cache_version=GENERATION_LOADER_CACHE_VERSION):
     """Load generation model and token mappings used by generate_music.py logic."""
+    # Cache version busts stale Streamlit cache entries after loader updates.
+    _ = cache_version
     base_dir = Path(__file__).resolve().parent
     data_dir = base_dir / "model_data"
 
@@ -185,21 +188,21 @@ def load_generation_assets():
         return None, f"Failed loading token mapping: {exc}"
 
     model = None
-    load_warning = None
+    load_errors = []
 
     # Try multiple model loaders because cloud runtimes can differ in Keras/H5 compatibility.
     try:
         from tensorflow.keras.models import load_model
         model = load_model(str(model_file), compile=False)
     except Exception as exc:
-        load_warning = f"Primary model loader failed: {exc}"
+        load_errors.append(f"Primary model loader failed: {exc}")
 
     if model is None:
         try:
             from keras.models import load_model as keras_load_model
             model = keras_load_model(str(model_file), compile=False, safe_mode=False)
         except Exception as exc:
-            load_warning = f"Keras fallback loader failed: {exc}"
+            load_errors.append(f"Keras fallback loader failed: {exc}")
 
     if model is None:
         try:
@@ -225,11 +228,52 @@ def load_generation_assets():
                     for item in node:
                         patch_input_layer_config(item)
 
+            def patch_dtype_policy_config(node):
+                if isinstance(node, dict):
+                    cfg = node.get("config")
+                    if isinstance(cfg, dict) and isinstance(cfg.get("dtype"), dict):
+                        dtype_cfg = cfg.get("dtype", {})
+                        if dtype_cfg.get("class_name") == "DTypePolicy":
+                            cfg["dtype"] = dtype_cfg.get("config", {}).get("name", "float32")
+                    for value in node.values():
+                        patch_dtype_policy_config(value)
+                elif isinstance(node, list):
+                    for item in node:
+                        patch_dtype_policy_config(item)
+
             patch_input_layer_config(model_config)
+            patch_dtype_policy_config(model_config)
             model = model_from_json(json.dumps(model_config))
             model.load_weights(str(model_file))
         except Exception as exc:
-            load_warning = f"Legacy H5 compatibility loader failed: {exc}"
+            load_errors.append(f"Legacy H5 compatibility loader failed: {exc}")
+
+    if model is None:
+        try:
+            import h5py
+            from tensorflow.keras.layers import InputLayer, Embedding, LSTM, Dropout, Dense
+            from tensorflow.keras.models import model_from_json
+
+            with h5py.File(str(model_file), "r") as h5f:
+                model_config = h5f.attrs.get("model_config")
+                if isinstance(model_config, bytes):
+                    model_config = model_config.decode("utf-8")
+
+            model = model_from_json(
+                model_config,
+                custom_objects={
+                    "InputLayer": InputLayer,
+                    "Embedding": Embedding,
+                    "LSTM": LSTM,
+                    "Dropout": Dropout,
+                    "Dense": Dense,
+                },
+            )
+            model.load_weights(str(model_file))
+        except Exception as exc:
+            load_errors.append(f"Custom-object compatibility loader failed: {exc}")
+
+    load_warning = None if model is not None else " | ".join(load_errors)
 
     return {
         "model": model,
