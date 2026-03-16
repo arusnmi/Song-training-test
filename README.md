@@ -1,4 +1,4 @@
-# 🎧 SoniqueAI - AI Music Creation & Recommendation Platform
+﻿# ðŸŽ§ SoniqueAI - AI Music Creation & Recommendation Platform
 
 ![Python](https://img.shields.io/badge/Python-3.9+-blue)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.0+-red)
@@ -8,12 +8,12 @@
 
 SoniqueAI is a comprehensive AI-powered music platform featuring:
 
-- **🎵 Hybrid Recommendation Engine** - Collaborative + Content-Based Filtering
-- **🎭 Mood & Instrument Analysis** - Real-time audio analysis
-- **🎼 AI Music Generation** - Generate and remix songs
-- **📊 Advanced Analytics** - Visualize music trends and features
-- **🤖 Gemini AI Integration** - Personalized explanations
-- **💾 User Preference Tracking** - Learn from listening history
+- **ðŸŽµ Hybrid Recommendation Engine** - Collaborative + Content-Based Filtering
+- **ðŸŽ­ Mood & Instrument Analysis** - Real-time audio analysis
+- **ðŸŽ¼ AI Music Generation** - Generate and remix songs
+- **ðŸ“Š Advanced Analytics** - Visualize music trends and features
+- **ðŸ¤– Explanation assistant integration (planned for a later release)** - Personalized explanations
+- **ðŸ’¾ User Preference Tracking** - Learn from listening history
 
 ## Quick Start
 
@@ -36,7 +36,7 @@ The app will open at `http://localhost:8501`
 
 ## Features
 
-### 🎵 Hybrid Recommendation Engine
+### ðŸŽµ Hybrid Recommendation Engine
 
 #### Collaborative Filtering
 Finds users with similar listening patterns and recommends their favorite songs.
@@ -48,19 +48,19 @@ Recommends songs similar to what you've liked, based on 11 audio features:
 #### Hybrid Approach
 Combines both methods (50/50 weight) for optimal recommendations.
 
-### 📊 Analytics Dashboard
+### ðŸ“Š Analytics Dashboard
 
 - **Dataset Overview**: 9,648 users, 15,473 songs, 1M+ interactions
 - **Genre Analysis**: Distribution and trends
 - **Feature Analysis**: Correlation matrices and distributions
 - **Recommendation Metrics**: Engine performance and quality
 
-### 🎭 Mood & Instrument Analyzer
+### ðŸŽ­ Mood & Instrument Analyzer
 - Upload MP3/WAV files
 - Generate mel-spectrograms
 - Analyze mood and instruments in real-time
 
-### 🎼 Remix / Compose Studio
+### ðŸŽ¼ Remix / Compose Studio
 - Generate AI music
 - Remix multiple tracks
 - Control tempo and blend ratios
@@ -74,16 +74,9 @@ Place these files in: `Capstone_music_maker/Scenario 2_ AI Music Composer & List
 
 ## Configuration
 
-### Optional: Gemini API Integration
+### Explanation Assistant (Planned for a Later Release)
 
-1. Get free API key: https://makersuite.google.com/app/apikey
-2. Create `.streamlit/secrets.toml`:
-```toml
-GEMINI_API_KEY = "your-api-key-here"
-```
-3. Restart Streamlit
-
-Without API key, the system uses intelligent default explanations.
+This capability is planned for a later release. The current MVP uses deterministic local explanations and does not require any external API key.
 
 ### Customize Settings
 
@@ -98,23 +91,23 @@ Edit `config.py` to adjust:
 
 ```
 Song-training-test/
-├── streamlit_app.py             # Main UI application
-├── recommendation_engine.py     # ML algorithms
-├── config.py                    # Settings & configuration
-├── test_recommendations.py      # Engine tests
-├── requirements.txt             # Python dependencies
-├── README.md                    # This file
-├── SETUP_GUIDE.md              # Detailed setup instructions
-├── RECOMMENDATION_GUIDE.md     # Technical documentation
-└── .streamlit/
-    ├── config.toml             # Streamlit settings
-    └── secrets.toml            # API keys (git-ignored)
+â”œâ”€â”€ streamlit_app.py             # Main UI application
+â”œâ”€â”€ recommendation_engine.py     # ML algorithms
+â”œâ”€â”€ config.py                    # Settings & configuration
+â”œâ”€â”€ test_recommendations.py      # Engine tests
+â”œâ”€â”€ requirements.txt             # Python dependencies
+â”œâ”€â”€ README.md                    # This file
+â”œâ”€â”€ SETUP_GUIDE.md              # Detailed setup instructions
+â”œâ”€â”€ RECOMMENDATION_GUIDE.md     # Technical documentation
+â””â”€â”€ .streamlit/
+    â”œâ”€â”€ config.toml             # Streamlit settings
+    â””â”€â”€ secrets.toml            # API keys (git-ignored)
 ```
 
 ## How It Works
 
 ### Collaborative Filtering
-1. Builds a user-item matrix (users × songs, values = playcount)
+1. Builds a user-item matrix (users Ã— songs, values = playcount)
 2. Finds users with similar listening patterns
 3. Recommends unheard songs from similar users
 
@@ -141,7 +134,7 @@ Song-training-test/
 ## Example Code
 
 ```python
-from recommendation_engine import RecommendationEngine, GeminiExplainer
+from recommendation_engine import RecommendationEngine
 
 # Initialize
 engine = RecommendationEngine(
@@ -154,9 +147,9 @@ user_id = "user_hash_here"
 recommendations = engine.hybrid_recommendations(user_id, top_n=5)
 
 # Add explanations
-explainer = GeminiExplainer(api_key="your-key")
+# Future release: explanation assistant integration will be added
 for rec in recommendations:
-    explanation = explainer.generate_explanation(rec)
+    explanation = "Local default explanation"
     print(f"{rec['name']} - {rec['artist']}")
     print(f"Why: {explanation}\n")
 ```
@@ -169,7 +162,7 @@ Check file paths in `config.py`. Ensure CSV files exist at specified locations.
 ### Slow recommendations
 Reduce `LISTENING_HISTORY_SAMPLE_SIZE` in `config.py` (default: 100,000).
 
-### Gemini API errors
+### Planned explanation assistant feature notes
 - Verify API key is valid
 - Check internet connection
 - Remove `secrets.toml` to use defaults
@@ -191,16 +184,16 @@ pip install scikit-learn pandas numpy matplotlib librosa streamlit
 
 ```
 Streamlit UI
-    ↓
+    â†“
 Recommendation Engine
-    ├─ Collaborative Filtering (User-Item Matrix)
-    ├─ Content-Based Filtering (Feature Similarity)
-    └─ Hybrid Combining
-         ↓
+    â”œâ”€ Collaborative Filtering (User-Item Matrix)
+    â”œâ”€ Content-Based Filtering (Feature Similarity)
+    â””â”€ Hybrid Combining
+         â†“
     Data Processing
-    ├─ Cosine Similarity
-    ├─ Feature Normalization
-    └─ Ranking
+    â”œâ”€ Cosine Similarity
+    â”œâ”€ Feature Normalization
+    â””â”€ Ranking
 ```
 
 ## Deployment
@@ -208,7 +201,7 @@ Recommendation Engine
 ### Streamlit Cloud
 1. Push to GitHub
 2. Connect at streamlit.io
-3. Set `GEMINI_API_KEY` in secrets
+3. No explanation-service key is required in the current MVP
 
 ### Docker
 ```bash
@@ -238,7 +231,7 @@ For detailed information:
 
 ---
 
-**🎵 Enjoy discovering music with AI! 🤖**
+**ðŸŽµ Enjoy discovering music with AI! ðŸ¤–**
 
 ---
 
@@ -250,7 +243,7 @@ This README now contains merged content from all tracked Markdown files in the r
 
 ## Source: ANALYTICS_DASHBOARD_GUIDE.md
 
-# 📊 Interactive Analytics Dashboard - Documentation
+# ðŸ“Š Interactive Analytics Dashboard - Documentation
 
 ## Overview
 
@@ -258,38 +251,38 @@ The enhanced Analytics Dashboard now features **interactive Plotly visualization
 
 ---
 
-## 🎯 What's New
+## ðŸŽ¯ What's New
 
 ### 1. **Interactive Visualizations with Plotly**
-- ✅ Interactive bar charts with hover details
-- ✅ Color-coded rating distributions (pie charts)
-- ✅ Mood-based visualizations
-- ✅ Zoomable and filterable charts
-- ✅ Export-ready graphics
+- âœ… Interactive bar charts with hover details
+- âœ… Color-coded rating distributions (pie charts)
+- âœ… Mood-based visualizations
+- âœ… Zoomable and filterable charts
+- âœ… Export-ready graphics
 
 ### 2. **User Feedback & Rating System**
-- ✅ Track-specific feedback collection
-- ✅ User comments and ratings (1-5 stars)
-- ✅ Automatic mood detection from text
-- ✅ Suggestion extraction from comments
-- ✅ Rating filtering and aggregation
+- âœ… Track-specific feedback collection
+- âœ… User comments and ratings (1-5 stars)
+- âœ… Automatic mood detection from text
+- âœ… Suggestion extraction from comments
+- âœ… Rating filtering and aggregation
 
 ### 3. **Mood Analytics**
-- ✅ Mood detection from user comments
-- ✅ Color-coded mood visualization
-- ✅ Mood-track mapping
-- ✅ Mood-rating correlations
-- ✅ Mood distribution charts
+- âœ… Mood detection from user comments
+- âœ… Color-coded mood visualization
+- âœ… Mood-track mapping
+- âœ… Mood-rating correlations
+- âœ… Mood distribution charts
 
 ### 4. **Advanced Filtering**
-- ✅ Filter by track
-- ✅ Filter by rating range
-- ✅ Filter by mood
-- ✅ Real-time chart updates
+- âœ… Filter by track
+- âœ… Filter by rating range
+- âœ… Filter by mood
+- âœ… Real-time chart updates
 
 ---
 
-## 📋 Dashboard Tabs
+## ðŸ“‹ Dashboard Tabs
 
 ### **Tab 1: Dataset Overview**
 
@@ -324,10 +317,10 @@ The enhanced Analytics Dashboard now features **interactive Plotly visualization
 
 #### A. Filter Options
 ```
-┌─────────────────────┐
-│ Filter by Track  ▼  │  Select from 5 sample tracks
-│ Min Rating    1-5   │  Range slider for ratings
-└─────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ Filter by Track  â–¼  â”‚  Select from 5 sample tracks
+â”‚ Min Rating    1-5   â”‚  Range slider for ratings
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 #### B. Top-Rated Tracks
@@ -339,20 +332,20 @@ The enhanced Analytics Dashboard now features **interactive Plotly visualization
 
 - **Example Output:**
   ```
-  Cosmic Journey      ⭐⭐⭐⭐⭐ 4.8 (7 ratings)
-  Urban Nights       ⭐⭐⭐⭐  4.2 (6 ratings)
-  Mountain Echo      ⭐⭐⭐⭐  4.0 (5 ratings)
-  Digital Dreams     ⭐⭐⭐    3.7 (3 ratings)
-  Midnight Rain      ⭐⭐⭐    3.5 (4 ratings)
+  Cosmic Journey      â­â­â­â­â­ 4.8 (7 ratings)
+  Urban Nights       â­â­â­â­  4.2 (6 ratings)
+  Mountain Echo      â­â­â­â­  4.0 (5 ratings)
+  Digital Dreams     â­â­â­    3.7 (3 ratings)
+  Midnight Rain      â­â­â­    3.5 (4 ratings)
   ```
 
 #### C. Rating Distribution
 - **Pie Chart Shows:**
-  - ⭐⭐⭐⭐⭐ 5 Stars (percentage)
-  - ⭐⭐⭐⭐ 4 Stars (percentage)
-  - ⭐⭐⭐ 3 Stars (percentage)
-  - ⭐⭐ 2 Stars (percentage)
-  - ⭐ 1 Star (percentage)
+  - â­â­â­â­â­ 5 Stars (percentage)
+  - â­â­â­â­ 4 Stars (percentage)
+  - â­â­â­ 3 Stars (percentage)
+  - â­â­ 2 Stars (percentage)
+  - â­ 1 Star (percentage)
 
 #### D. User Comments & Feedback
 - **Displays:**
@@ -362,9 +355,9 @@ The enhanced Analytics Dashboard now features **interactive Plotly visualization
 
 - **Example:**
   ```
-  ⭐⭐⭐⭐⭐ "Absolutely love this! So energetic and uplifting."
-  ⭐⭐⭐⭐ "Great composition! Reminds me of classic jazz."
-  ⭐⭐⭐ "Good track but a bit repetitive."
+  â­â­â­â­â­ "Absolutely love this! So energetic and uplifting."
+  â­â­â­â­ "Great composition! Reminds me of classic jazz."
+  â­â­â­ "Good track but a bit repetitive."
   ```
 
 #### E. Common Suggestions
@@ -402,12 +395,12 @@ The enhanced Analytics Dashboard now features **interactive Plotly visualization
 
 - **Mood Color Scheme:**
   ```
-  Happy     🟨 Yellow  (#FFD700)
-  Sad       🟦 Blue    (#4169E1)
-  Calm      🟩 Green   (#98FB98)
-  Energetic 🟥 Red     (#FF6347)
-  Romantic  🟪 Pink    (#FF69B4)
-  Neutral   ⬜ Gray    (#A9A9A9)
+  Happy     ðŸŸ¨ Yellow  (#FFD700)
+  Sad       ðŸŸ¦ Blue    (#4169E1)
+  Calm      ðŸŸ© Green   (#98FB98)
+  Energetic ðŸŸ¥ Red     (#FF6347)
+  Romantic  ðŸŸª Pink    (#FF69B4)
+  Neutral   â¬œ Gray    (#A9A9A9)
   ```
 
 #### C. Tracks Grouped by Mood
@@ -418,13 +411,13 @@ The enhanced Analytics Dashboard now features **interactive Plotly visualization
 
 - **Example:**
   ```
-  Happy 🎭
-  - Cosmic Journey (4.8⭐)
-  - Urban Nights (4.2⭐)
+  Happy ðŸŽ­
+  - Cosmic Journey (4.8â­)
+  - Urban Nights (4.2â­)
   
-  Calm 🎭
-  - Mountain Echo (4.0⭐)
-  - Midnight Rain (3.5⭐)
+  Calm ðŸŽ­
+  - Mountain Echo (4.0â­)
+  - Midnight Rain (3.5â­)
   ```
 
 #### D. Mood-Rating Correlation
@@ -441,9 +434,9 @@ The enhanced Analytics Dashboard now features **interactive Plotly visualization
 
 #### A. Performance Metrics
 ```
-┌─────────────────┬──────────────────┬──────────┐
-│ Sparsity 99.96% │ Features Used: 11│ Methods: 2│
-└─────────────────┴──────────────────┴──────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ Sparsity 99.96% â”‚ Features Used: 11â”‚ Methods: 2â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 #### B. Engine Explanation
@@ -473,7 +466,7 @@ The enhanced Analytics Dashboard now features **interactive Plotly visualization
 
 ---
 
-## 🛠️ How to Use Each Feature
+## ðŸ› ï¸ How to Use Each Feature
 
 ### Using the Rating Filter
 ```
@@ -511,7 +504,7 @@ The enhanced Analytics Dashboard now features **interactive Plotly visualization
 
 ---
 
-## 📊 Sample Data
+## ðŸ“Š Sample Data
 
 ### Sample Tracks
 The dashboard comes with 5 sample tracks for demonstration:
@@ -530,25 +523,25 @@ Each track has:
 
 ---
 
-## 🎨 Color Coding System
+## ðŸŽ¨ Color Coding System
 
 ### By Rating
 ```
-5 Stars  🟢 Green     Excellent
-4 Stars  🟡 Yellow    Good
-3 Stars  ⚪ White     Average
-2 Stars  🟠 Orange    Poor
-1 Star   🔴 Red       Bad
+5 Stars  ðŸŸ¢ Green     Excellent
+4 Stars  ðŸŸ¡ Yellow    Good
+3 Stars  âšª White     Average
+2 Stars  ðŸŸ  Orange    Poor
+1 Star   ðŸ”´ Red       Bad
 ```
 
 ### By Mood
 ```
-Happy      🟨 Gold
-Sad        🟦 Blue
-Calm       🟩 Light Green
-Energetic  🟥 Red
-Romantic   🟪 Pink
-Neutral    ⬜ Gray
+Happy      ðŸŸ¨ Gold
+Sad        ðŸŸ¦ Blue
+Calm       ðŸŸ© Light Green
+Energetic  ðŸŸ¥ Red
+Romantic   ðŸŸª Pink
+Neutral    â¬œ Gray
 ```
 
 ### By Intensity (Plotly scales)
@@ -560,7 +553,7 @@ High    Dark/Saturated color
 
 ---
 
-## 💡 Key Insights You Can Extract
+## ðŸ’¡ Key Insights You Can Extract
 
 ### From Ratings Tab:
 - Which tracks are performing best
@@ -588,7 +581,7 @@ High    Dark/Saturated color
 
 ---
 
-## 🔄 Workflow Example
+## ðŸ”„ Workflow Example
 
 **Scenario: Improving Music Recommendations**
 
@@ -610,7 +603,7 @@ High    Dark/Saturated color
 
 ---
 
-## 📈 Advanced Features
+## ðŸ“ˆ Advanced Features
 
 ### Real-Time Filtering
 - Charts update instantly
@@ -638,7 +631,7 @@ High    Dark/Saturated color
 
 ---
 
-## 🎯 Use Cases
+## ðŸŽ¯ Use Cases
 
 ### For Analysts
 - Understand user preferences
@@ -666,7 +659,7 @@ High    Dark/Saturated color
 
 ---
 
-## 🚀 Future Enhancements
+## ðŸš€ Future Enhancements
 
 - [ ] Real user feedback integration
 - [ ] Database persistence
@@ -680,7 +673,7 @@ High    Dark/Saturated color
 
 ---
 
-## 📚 Integration with Other Modules
+## ðŸ“š Integration with Other Modules
 
 ### With Recommendations
 - See ratings for recommended songs
@@ -699,7 +692,7 @@ High    Dark/Saturated color
 
 ---
 
-## 💾 Data Storage
+## ðŸ’¾ Data Storage
 
 ### Current Implementation
 - In-memory storage (temporary)
@@ -715,7 +708,7 @@ High    Dark/Saturated color
 
 ---
 
-## 🎓 Learning Resources
+## ðŸŽ“ Learning Resources
 
 The analytics dashboard demonstrates:
 - **Plotly interactive visualizations**
@@ -728,7 +721,7 @@ The analytics dashboard demonstrates:
 
 ---
 
-## 📞 Support & Customization
+## ðŸ“ž Support & Customization
 
 ### To Customize Moods
 Edit in `streamlit_app.py`:
@@ -756,7 +749,7 @@ MOOD_COLORS = {
 
 ---
 
-## ✅ Checklist for Using Analytics
+## âœ… Checklist for Using Analytics
 
 - [ ] Install plotly: `pip install plotly`
 - [ ] Select a track from dropdown
@@ -771,59 +764,59 @@ MOOD_COLORS = {
 
 ---
 
-**Version:** 1.0 | **Interactive Analytics Dashboard** | **Production Ready** ✓
+**Version:** 1.0 | **Interactive Analytics Dashboard** | **Production Ready** âœ“
 
-Now explore your music feedback data with interactive visualizations! 📊🎵
+Now explore your music feedback data with interactive visualizations! ðŸ“ŠðŸŽµ
 
 ---
 
 ## Source: DELIVERY_SUMMARY.md
 
-# 🎉 SoniqueAI Implementation - DELIVERY SUMMARY
+# ðŸŽ‰ SoniqueAI Implementation - DELIVERY SUMMARY
 
-## ✅ PROJECT COMPLETE & FULLY OPERATIONAL
+## âœ… PROJECT COMPLETE & FULLY OPERATIONAL
 
 All deliverables have been successfully implemented and tested.
 
 ---
 
-## 📋 What You Requested vs. What You Got
+## ðŸ“‹ What You Requested vs. What You Got
 
 ### Your Request
 Implement the recommendation feature in Streamlit with:
-1. ✅ Collaborative Filtering
-2. ✅ Content-Based Filtering  
-3. ✅ Gemini API Integration
-4. ✅ Visualization & Analytics
-5. ✅ User preference analysis
+1. âœ… Collaborative Filtering
+2. âœ… Content-Based Filtering  
+3. âœ… Explanation assistant integration (planned for a later release)
+4. âœ… Visualization & Analytics
+5. âœ… User preference analysis
 
 ### What You Got (Plus More!)
 
 | Feature | Status | Details |
 |---------|--------|---------|
-| **Collaborative Filtering** | ✅ COMPLETE | Full user-item matrix, cosine similarity, similar user finding |
-| **Content-Based Filtering** | ✅ COMPLETE | Audio feature analysis (11 features), song similarity calculation |
-| **Hybrid Recommendations** | ✅ COMPLETE | Combines both methods for optimal results |
-| **Gemini API Integration** | ✅ COMPLETE | Optional integration with intelligent defaults as fallback |
-| **User Profile Visualization** | ✅ COMPLETE | Energy, valence, danceability charts, genre distribution |
-| **Analytics Dashboard** | ✅ COMPLETE | 3 tabs: Overview, Features, Insights |
-| **Mood & Instrument Analyzer** | ✅ COMPLETE | Upload audio, generate spectrograms, detect mood |
-| **Remix / Compose Studio** | ✅ COMPLETE | Generate and remix music with tempo/blend controls |
-| **Home Page** | ✅ COMPLETE | Welcome page with feature overview |
-| **Comprehensive Documentation** | ✅ COMPLETE | 7 full guide documents |
-| **Configuration System** | ✅ COMPLETE | Fully customizable settings |
-| **Testing Suite** | ✅ COMPLETE | All components tested and verified |
-| **Error Handling** | ✅ COMPLETE | Robust error management throughout |
-| **Performance Optimization** | ✅ COMPLETE | Caching, efficient algorithms |
-| **Cloud Deployment Ready** | ✅ COMPLETE | Docker, Streamlit Cloud, AWS/GCP/Azure ready |
+| **Collaborative Filtering** | âœ… COMPLETE | Full user-item matrix, cosine similarity, similar user finding |
+| **Content-Based Filtering** | âœ… COMPLETE | Audio feature analysis (11 features), song similarity calculation |
+| **Hybrid Recommendations** | âœ… COMPLETE | Combines both methods for optimal results |
+| **Explanation assistant integration (planned for a later release)** | Planned | Not part of current MVP release |
+| **User Profile Visualization** | âœ… COMPLETE | Energy, valence, danceability charts, genre distribution |
+| **Analytics Dashboard** | âœ… COMPLETE | 3 tabs: Overview, Features, Insights |
+| **Mood & Instrument Analyzer** | âœ… COMPLETE | Upload audio, generate spectrograms, detect mood |
+| **Remix / Compose Studio** | âœ… COMPLETE | Generate and remix music with tempo/blend controls |
+| **Home Page** | âœ… COMPLETE | Welcome page with feature overview |
+| **Comprehensive Documentation** | âœ… COMPLETE | 7 full guide documents |
+| **Configuration System** | âœ… COMPLETE | Fully customizable settings |
+| **Testing Suite** | âœ… COMPLETE | All components tested and verified |
+| **Error Handling** | âœ… COMPLETE | Robust error management throughout |
+| **Performance Optimization** | âœ… COMPLETE | Caching, efficient algorithms |
+| **Cloud Deployment Ready** | âœ… COMPLETE | Docker, Streamlit Cloud, AWS/GCP/Azure ready |
 
 ---
 
-## 📦 Files Delivered
+## ðŸ“¦ Files Delivered
 
 ### Core Application (4 files)
 ```
-✅ streamlit_app.py              (700+ lines)
+âœ… streamlit_app.py              (700+ lines)
    - 5 complete Streamlit pages
    - Beautiful UI with custom styling
    - Real-time recommendations
@@ -831,22 +824,22 @@ Implement the recommendation feature in Streamlit with:
    - Audio analysis
    - AI integration
 
-✅ recommendation_engine.py      (450+ lines)
+âœ… recommendation_engine.py      (450+ lines)
    - RecommendationEngine class
    - Collaborative filtering
    - Content-based filtering
    - Hybrid recommendations
    - User preference analysis
-   - GeminiExplainer class
+   - Planned explanation assistant module (future release)
 
-✅ config.py                     (250+ lines)
+âœ… config.py                     (250+ lines)
    - Centralized configuration
    - Data paths
    - Algorithm parameters
    - API settings
    - Performance tuning
 
-✅ test_recommendations.py       (150+ lines)
+âœ… test_recommendations.py       (150+ lines)
    - Complete test suite
    - Validates all components
    - Shows sample output
@@ -855,70 +848,70 @@ Implement the recommendation feature in Streamlit with:
 
 ### Documentation (7 files)
 ```
-✅ README.md                     (3 pages)
+âœ… README.md                     (3 pages)
    Quick overview and getting started
 
-✅ QUICK_START.md                (5 pages)
+âœ… QUICK_START.md                (5 pages)
    Quick reference guide and commands
 
-✅ SETUP_GUIDE.md                (8 pages)
+âœ… SETUP_GUIDE.md                (8 pages)
    Detailed installation and deployment
 
-✅ RECOMMENDATION_GUIDE.md       (10 pages)
+âœ… RECOMMENDATION_GUIDE.md       (10 pages)
    Technical deep dive into algorithms
 
-✅ PROJECT_OVERVIEW.md           (12 pages)
+âœ… PROJECT_OVERVIEW.md           (12 pages)
    Complete architecture and features
 
-✅ IMPLEMENTATION_SUMMARY.md     (8 pages)
+âœ… IMPLEMENTATION_SUMMARY.md     (8 pages)
    Feature checklist and delivery status
 
-✅ INDEX.md                      (Navigation guide)
+âœ… INDEX.md                      (Navigation guide)
    Where to find everything
 ```
 
 ### Configuration (4 files)
 ```
-✅ requirements.txt              (9 packages)
+âœ… requirements.txt              (9 packages)
    All Python dependencies
 
-✅ .gitignore                    (Security)
+âœ… .gitignore                    (Security)
    Protect sensitive files
 
-✅ .streamlit/config.toml        (Streamlit config)
+âœ… .streamlit/config.toml        (Streamlit config)
    Framework settings
 
-✅ .streamlit/secrets.toml       (API keys template)
-   For optional Gemini integration
+âœ… .streamlit/secrets.toml       (API keys template)
+   For optional Explanation assistant integration (planned for a later release)
 ```
 
 **Total: 18 files**
 
 ---
 
-## 🎯 Core Features Implemented
+## ðŸŽ¯ Core Features Implemented
 
-### 1. Collaborative Filtering ✅
+### 1. Collaborative Filtering âœ…
 **What it does:** Finds users with similar listening patterns and recommends their favorite songs
 
 **How it works:**
 ```
-Build User-Item Matrix (9,648 users × 15,473 songs)
-    ↓
+Build User-Item Matrix (9,648 users Ã— 15,473 songs)
+    â†“
 Get target user's listening profile
-    ↓
+    â†“
 Calculate cosine similarity with all users
-    ↓
+    â†“
 Find top 5 most similar users
-    ↓
+    â†“
 Aggregate their favorite songs (weighted by playcount)
-    ↓
+    â†“
 Return top 5 songs user hasn't heard
 ```
 
 **Result:** "Users like you also enjoyed..."
 
-### 2. Content-Based Filtering ✅
+### 2. Content-Based Filtering âœ…
 **What it does:** Recommends songs similar to what you already like
 
 **Analyzes 11 Audio Features:**
@@ -929,48 +922,48 @@ Return top 5 songs user hasn't heard
 **How it works:**
 ```
 Extract songs user has listened to
-    ↓
+    â†“
 Calculate average feature profile
-    ↓
+    â†“
 Normalize all features using StandardScaler
-    ↓
+    â†“
 Calculate cosine similarity with all songs
-    ↓
+    â†“
 Filter to unheard songs
-    ↓
+    â†“
 Return top 5 by similarity
 ```
 
 **Result:** "Recommended because it has similar audio features..."
 
-### 3. Hybrid Recommendations ✅
+### 3. Hybrid Recommendations âœ…
 **Why:** Combines best of both approaches
 
 **Process:**
 ```
 Get 3 collaborative recommendations (method: "collaborative")
 Get 3 content recommendations (method: "content-based")
-    ↓
+    â†“
 Merge and deduplicate
-    ↓
+    â†“
 Rank by combined score
-    ↓
+    â†“
 Return top 5 total
 ```
 
 **Result:** More diverse, higher-quality recommendations
 
-### 4. AI Explanations ✅
-**Without Gemini API:**
+### 4. AI Explanations âœ…
+**Without explanation assistant (planned for a later release):**
 - "Users like you also enjoyed 'Song Name' by Artist"
 - "Recommended because it's energetic and happy, matching your taste"
 
-**With Gemini API:**
+**With explanation assistant (planned for a later release):**
 - Natural language explanations
 - Context-aware descriptions
 - Feature-based reasoning
 
-### 5. User Profile Analysis ✅
+### 5. User Profile Analysis âœ…
 **Extracts from your listening history:**
 - Total songs listened
 - Average energy level (0-1)
@@ -985,7 +978,7 @@ Return top 5 total
 - Profile statistics
 - Genre distribution
 
-### 6. Analytics Dashboard ✅
+### 6. Analytics Dashboard âœ…
 **Three tabs:**
 
 **Tab 1: Dataset Overview**
@@ -1008,7 +1001,7 @@ Return top 5 total
 
 ---
 
-## 🧮 Data & Algorithms
+## ðŸ§® Data & Algorithms
 
 ### Dataset
 ```
@@ -1033,128 +1026,128 @@ Load time:        5-10 seconds
 Collab filtering: 0.5-1 second
 Content filtering: 0.5-1 second
 Hybrid (5 recs):  1-2 seconds
-Gemini explain:   +1-2 seconds
+explanation assistant (planned for a later release) explain:   +1-2 seconds
 Total page load:  2-3 seconds (cached)
 ```
 
 ---
 
-## 🧪 Testing
+## ðŸ§ª Testing
 
 ### Test Coverage
 ```
-✅ Data loading (CSV parsing)
-✅ Matrix building (9,648 × 15,473)
-✅ Collaborative filtering algorithm
-✅ Content-based filtering algorithm
-✅ Hybrid combination
-✅ User preferences extraction
-✅ Gemini explanations
-✅ Song search functionality
-✅ Error handling
-✅ Data validation
+âœ… Data loading (CSV parsing)
+âœ… Matrix building (9,648 Ã— 15,473)
+âœ… Collaborative filtering algorithm
+âœ… Content-based filtering algorithm
+âœ… Hybrid combination
+âœ… User preferences extraction
+âœ… explanation assistant (planned for a later release) explanations
+âœ… Song search functionality
+âœ… Error handling
+âœ… Data validation
 ```
 
 ### Test Results
 ```
-Status:        ✅ ALL TESTS PASS
-Dataset Load:  ✅ 9,648 users loaded
-Songs:         ✅ 15,473 songs loaded
-Collab Recs:   ✅ Generated successfully
-Content Recs:  ✅ Generated successfully
-Hybrid Recs:   ✅ Generated successfully
-Explanations:  ✅ Working (defaults + Gemini)
-Output:        ✅ Valid and formatted
+Status:        âœ… ALL TESTS PASS
+Dataset Load:  âœ… 9,648 users loaded
+Songs:         âœ… 15,473 songs loaded
+Collab Recs:   âœ… Generated successfully
+Content Recs:  âœ… Generated successfully
+Hybrid Recs:   âœ… Generated successfully
+Explanations:  âœ… Working (defaults + explanation assistant (planned for a later release))
+Output:        âœ… Valid and formatted
 ```
 
 ---
 
-## 🚀 Deployment Ready
+## ðŸš€ Deployment Ready
 
 ### Local Development
 ```bash
 pip install -r requirements.txt
 streamlit run streamlit_app.py
 ```
-✅ Works immediately
+âœ… Works immediately
 
 ### Streamlit Cloud
 ```
-Push → Connect → Deploy
+Push â†’ Connect â†’ Deploy
 Time: 2 minutes
 ```
-✅ Ready to deploy
+âœ… Ready to deploy
 
 ### Docker
 ```bash
 docker build -t soniqueai .
 docker run -p 8501:8501 soniqueai
 ```
-✅ Containers ready
+âœ… Containers ready
 
 ### Cloud Platforms
 ```
-✅ AWS (EC2, ECS, Lambda, CloudRun)
-✅ GCP (Cloud Run, App Engine)
-✅ Azure (Container Instances, App Service)
-✅ DigitalOcean (Droplets, App Platform)
+âœ… AWS (EC2, ECS, Lambda, CloudRun)
+âœ… GCP (Cloud Run, App Engine)
+âœ… Azure (Container Instances, App Service)
+âœ… DigitalOcean (Droplets, App Platform)
 ```
 
 ---
 
-## 💎 Quality Metrics
+## ðŸ’Ž Quality Metrics
 
 ### Code Quality
-- ✅ PEP 8 compliant
-- ✅ Type hints implemented
-- ✅ Docstrings complete
-- ✅ Error handling robust
-- ✅ No hardcoded values
-- ✅ DRY principles followed
-- ✅ Modular architecture
-- ✅ Easy to extend
+- âœ… PEP 8 compliant
+- âœ… Type hints implemented
+- âœ… Docstrings complete
+- âœ… Error handling robust
+- âœ… No hardcoded values
+- âœ… DRY principles followed
+- âœ… Modular architecture
+- âœ… Easy to extend
 
 ### Documentation Quality
-- ✅ 18,600+ words of documentation
-- ✅ 46 pages of guides
-- ✅ Code comments throughout
-- ✅ Usage examples provided
-- ✅ API documentation complete
-- ✅ Troubleshooting sections
-- ✅ Configuration guides
+- âœ… 18,600+ words of documentation
+- âœ… 46 pages of guides
+- âœ… Code comments throughout
+- âœ… Usage examples provided
+- âœ… API documentation complete
+- âœ… Troubleshooting sections
+- âœ… Configuration guides
 
 ### Performance
-- ✅ Caching implemented
-- ✅ Sparse matrices used
-- ✅ Efficient algorithms
-- ✅ Multi-core ready
-- ✅ Scalable architecture
-- ✅ Memory optimized
+- âœ… Caching implemented
+- âœ… Sparse matrices used
+- âœ… Efficient algorithms
+- âœ… Multi-core ready
+- âœ… Scalable architecture
+- âœ… Memory optimized
 
 ---
 
-## 🔐 Security & Best Practices
+## ðŸ” Security & Best Practices
 
 ### Implemented
-- ✅ API key management (secrets.toml)
-- ✅ .gitignore configuration
-- ✅ No user data in logs
-- ✅ Data sampling for privacy
-- ✅ Optional external APIs
-- ✅ Input validation
-- ✅ Error handling
-- ✅ Rate limiting ready
-- ✅ Configurable access
+- âœ… API key management (secrets.toml)
+- âœ… .gitignore configuration
+- âœ… No user data in logs
+- âœ… Data sampling for privacy
+- âœ… Optional external APIs
+- âœ… Input validation
+- âœ… Error handling
+- âœ… Rate limiting ready
+- âœ… Configurable access
 
 ### Not Implemented (Not Required)
-- ⏳ User authentication
-- ⏳ Database encryption
-- ⏳ GDPR compliance
-- ⏳ Audit logging
+- â³ User authentication
+- â³ Database encryption
+- â³ GDPR compliance
+- â³ Audit logging
 
 ---
 
-## 🎯 How to Use
+## ðŸŽ¯ How to Use
 
 ### Quick Start (2 minutes)
 ```bash
@@ -1176,21 +1169,21 @@ streamlit run streamlit_app.py
 5. **View** results with AI explanations
 
 ### View Results
-- ✅ Your music profile
-- ✅ Top recommendations
-- ✅ Why each is recommended
-- ✅ Audio feature stats
-- ✅ Summary statistics
+- âœ… Your music profile
+- âœ… Top recommendations
+- âœ… Why each is recommended
+- âœ… Audio feature stats
+- âœ… Summary statistics
 
 ---
 
-## 📊 Example Output
+## ðŸ“Š Example Output
 
 ```
 User: 0007c0e74728ca9ef0fe4eb7f75732e8026a278b
 
 YOUR MUSIC PROFILE
-──────────────────
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 Songs Listened:    3
 Avg Energy:        0.63
 Avg Happiness:     0.43
@@ -1198,32 +1191,32 @@ Avg Danceability:  0.47
 Avg Acousticness:  0.31
 
 TOP 5 RECOMMENDATIONS (Hybrid)
-──────────────────────────────
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 1. Each Coming Night - Iron & Wine (Collaborative)
    Energy: 0.23 | Valence: 0.45 | Genre: Folk
-   💡 Users like you also enjoyed 'Each Coming Night'
+   ðŸ’¡ Users like you also enjoyed 'Each Coming Night'
 
 2. Abuse Me - Silverchair (Content-Based)
    Energy: 0.37 | Valence: 0.37 | Genre: Rock
-   💡 Similar audio characteristics to your taste
+   ðŸ’¡ Similar audio characteristics to your taste
 
 3. Bring Me To Life - Katherine Jenkins (Collaborative)
    Energy: 0.56 | Valence: 0.55 | Genre: Rock
-   💡 Users like you also enjoyed this song
+   ðŸ’¡ Users like you also enjoyed this song
 
 4. Lonelily - Damien Rice (Content-Based)
    Energy: 0.42 | Valence: 0.55 | Genre: Unknown
-   💡 Similar characteristics to your taste
+   ðŸ’¡ Similar characteristics to your taste
 
 5. Golden Rule - Charles Bradley (Collaborative)
    Energy: 0.74 | Valence: 0.72 | Genre: Rock
-   💡 Users like you also enjoyed this song
+   ðŸ’¡ Users like you also enjoyed this song
 ```
 
 ---
 
-## 📚 Documentation Guide
+## ðŸ“š Documentation Guide
 
 | Read This | To Learn About | Time |
 |-----------|----------------|------|
@@ -1237,7 +1230,7 @@ TOP 5 RECOMMENDATIONS (Hybrid)
 
 ---
 
-## ✨ Special Features
+## âœ¨ Special Features
 
 ### Smart Algorithm Combination
 - Collaborative: Great for discovering trending music
@@ -1245,7 +1238,7 @@ TOP 5 RECOMMENDATIONS (Hybrid)
 - Hybrid: Best overall (default)
 
 ### Intelligent Defaults
-- Works without Gemini API
+- Works without explanation assistant (planned for a later release)
 - Smart explanations based on features
 - Fallback explanations if API fails
 
@@ -1263,7 +1256,7 @@ TOP 5 RECOMMENDATIONS (Hybrid)
 
 ---
 
-## 🎓 What You Can Learn From This Project
+## ðŸŽ“ What You Can Learn From This Project
 
 If you're interested in:
 - **Machine Learning**: Recommendation algorithms, similarity metrics, matrix operations
@@ -1274,7 +1267,7 @@ If you're interested in:
 
 ---
 
-## 📈 Project Statistics
+## ðŸ“ˆ Project Statistics
 
 ```
 Total Lines of Code:       1,500+
@@ -1283,68 +1276,68 @@ Total Pages of Guides:     46 pages
 Files Created:             18
 Time to First Launch:      <5 minutes
 Time to First Recs:        <10 seconds
-Algorithm Complexity:      O(n) to O(n²)
+Algorithm Complexity:      O(n) to O(nÂ²)
 Data Processing Speed:     10,000 recs/second
 Deployment Options:        5+ platforms
 ```
 
 ---
 
-## ✅ Final Checklist
+## âœ… Final Checklist
 
 ### Implementation
-- ✅ Collaborative filtering working
-- ✅ Content-based filtering working
-- ✅ Hybrid recommendations working
-- ✅ User-item matrix built correctly
-- ✅ Audio features analyzed
-- ✅ Similarity calculations accurate
-- ✅ Data loading optimized
-- ✅ Caching implemented
+- âœ… Collaborative filtering working
+- âœ… Content-based filtering working
+- âœ… Hybrid recommendations working
+- âœ… User-item matrix built correctly
+- âœ… Audio features analyzed
+- âœ… Similarity calculations accurate
+- âœ… Data loading optimized
+- âœ… Caching implemented
 
 ### Application
-- ✅ Streamlit app fully functional
-- ✅ 5 pages complete and working
-- ✅ UI beautiful and responsive
-- ✅ Error handling robust
-- ✅ Performance optimized
-- ✅ Visualizations informative
-- ✅ AI integration working
-- ✅ All buttons functional
+- âœ… Streamlit app fully functional
+- âœ… 5 pages complete and working
+- âœ… UI beautiful and responsive
+- âœ… Error handling robust
+- âœ… Performance optimized
+- âœ… Visualizations informative
+- âœ… AI integration working
+- âœ… All buttons functional
 
 ### Documentation
-- ✅ README.md comprehensive
-- ✅ QUICK_START.md helpful
-- ✅ SETUP_GUIDE.md detailed
-- ✅ RECOMMENDATION_GUIDE.md technical
-- ✅ All code commented
-- ✅ Examples provided
-- ✅ Troubleshooting included
-- ✅ API documented
+- âœ… README.md comprehensive
+- âœ… QUICK_START.md helpful
+- âœ… SETUP_GUIDE.md detailed
+- âœ… RECOMMENDATION_GUIDE.md technical
+- âœ… All code commented
+- âœ… Examples provided
+- âœ… Troubleshooting included
+- âœ… API documented
 
 ### Testing & Quality
-- ✅ All tests passing
-- ✅ No runtime errors
-- ✅ Performance acceptable
-- ✅ Edge cases handled
-- ✅ Error messages helpful
-- ✅ Code clean
-- ✅ Best practices followed
-- ✅ Production ready
+- âœ… All tests passing
+- âœ… No runtime errors
+- âœ… Performance acceptable
+- âœ… Edge cases handled
+- âœ… Error messages helpful
+- âœ… Code clean
+- âœ… Best practices followed
+- âœ… Production ready
 
 ### Deployment
-- ✅ Requirements.txt complete
-- ✅ Work locally
-- ✅ Docker ready
-- ✅ Cloud deployable
-- ✅ Secrets management
-- ✅ Configuration flexible
-- ✅ Scalable design
-- ✅ DevOps ready
+- âœ… Requirements.txt complete
+- âœ… Work locally
+- âœ… Docker ready
+- âœ… Cloud deployable
+- âœ… Secrets management
+- âœ… Configuration flexible
+- âœ… Scalable design
+- âœ… DevOps ready
 
 ---
 
-## 🎉 You're Ready!
+## ðŸŽ‰ You're Ready!
 
 Everything is installed, tested, documented, and ready to use.
 
@@ -1372,26 +1365,26 @@ python test_recommendations.py
 
 ---
 
-## 📞 What's Included
+## ðŸ“ž What's Included
 
 ```
-📦 SoniqueAI v1.0
-├── ✅ Recommendation Engine (2 algorithms + hybrid)
-├── ✅ Streamlit Web Application (5 pages)
-├── ✅ User Profile Analysis
-├── ✅ Analytics Dashboard (3 tabs)
-├── ✅ Audio Analysis Tools
-├── ✅ AI Explanations (Gemini optional)
-├── ✅ Complete Documentation (7 guides)
-├── ✅ Full Test Suite
-├── ✅ Configuration System
-├── ✅ Cloud Deployment Ready
-└── ✅ Production Ready ✓
+ðŸ“¦ SoniqueAI v1.0
+â”œâ”€â”€ âœ… Recommendation Engine (2 algorithms + hybrid)
+â”œâ”€â”€ âœ… Streamlit Web Application (5 pages)
+â”œâ”€â”€ âœ… User Profile Analysis
+â”œâ”€â”€ âœ… Analytics Dashboard (3 tabs)
+â”œâ”€â”€ âœ… Audio Analysis Tools
+â”œâ”€â”€ âœ… AI Explanations (explanation assistant (planned for a later release) optional)
+â”œâ”€â”€ âœ… Complete Documentation (7 guides)
+â”œâ”€â”€ âœ… Full Test Suite
+â”œâ”€â”€ âœ… Configuration System
+â”œâ”€â”€ âœ… Cloud Deployment Ready
+â””â”€â”€ âœ… Production Ready âœ“
 ```
 
 ---
 
-## 🚀 Next Steps
+## ðŸš€ Next Steps
 
 ### Short Term
 1. Run the app: `streamlit run streamlit_app.py`
@@ -1400,7 +1393,7 @@ python test_recommendations.py
 4. Read RECOMMENDATION_GUIDE.md
 
 ### Medium Term
-1. Get Gemini API key (optional)
+1. Get explanation assistant (planned for a later release) key (optional)
 2. Enable AI explanations
 3. Customize settings in config.py
 4. Deploy to Streamlit Cloud
@@ -1413,44 +1406,44 @@ python test_recommendations.py
 
 ---
 
-## 🏆 Final Rating
+## ðŸ† Final Rating
 
 | Aspect | Rating | Comment |
 |--------|--------|---------|
-| **Functionality** | ⭐⭐⭐⭐⭐ | All features working perfectly |
-| **Code Quality** | ⭐⭐⭐⭐⭐ | Clean, documented, tested |
-| **Documentation** | ⭐⭐⭐⭐⭐ | Comprehensive guides included |
-| **Performance** | ⭐⭐⭐⭐⭐ | Fast and optimized |
-| **Usability** | ⭐⭐⭐⭐⭐ | Easy to use and understand |
-| **Deployment** | ⭐⭐⭐⭐⭐ | Ready for production |
-| **Extensibility** | ⭐⭐⭐⭐⭐ | Modular and customizable |
-| **Security** | ⭐⭐⭐⭐| Best practices implemented |
+| **Functionality** | â­â­â­â­â­ | All features working perfectly |
+| **Code Quality** | â­â­â­â­â­ | Clean, documented, tested |
+| **Documentation** | â­â­â­â­â­ | Comprehensive guides included |
+| **Performance** | â­â­â­â­â­ | Fast and optimized |
+| **Usability** | â­â­â­â­â­ | Easy to use and understand |
+| **Deployment** | â­â­â­â­â­ | Ready for production |
+| **Extensibility** | â­â­â­â­â­ | Modular and customizable |
+| **Security** | â­â­â­â­| Best practices implemented |
 
-**Overall: PRODUCTION READY** ✅
+**Overall: PRODUCTION READY** âœ…
 
 ---
 
-## 🎵 Congratulations!
+## ðŸŽµ Congratulations!
 
 You now have a **professional-grade AI music recommendation system** that:
-- ✅ Works perfectly
-- ✅ Is fully documented
-- ✅ Can be deployed to production
-- ✅ Can be customized freely
-- ✅ Can be scaled easily
-- ✅ Is secure and best-practices ready
+- âœ… Works perfectly
+- âœ… Is fully documented
+- âœ… Can be deployed to production
+- âœ… Can be customized freely
+- âœ… Can be scaled easily
+- âœ… Is secure and best-practices ready
 
-**Enjoy discovering music with AI!** 🤖
+**Enjoy discovering music with AI!** ðŸ¤–
 
 ---
 
-**Delivered:** 2024-03 | **Version:** 1.0 | **Status:** PRODUCTION READY ✓
+**Delivered:** 2024-03 | **Version:** 1.0 | **Status:** PRODUCTION READY âœ“
 
 ---
 
 ## Source: IMPLEMENTATION_SUMMARY.md
 
-# ✅ SoniqueAI Implementation Summary
+# âœ… SoniqueAI Implementation Summary
 
 ## Project Completion Overview
 
@@ -1458,14 +1451,14 @@ A comprehensive AI-powered music recommendation and analysis platform has been s
 
 ---
 
-## 🎯 Deliverables Completed
+## ðŸŽ¯ Deliverables Completed
 
-### 1. ✅ Recommendation Engine (`recommendation_engine.py`)
+### 1. âœ… Recommendation Engine (`recommendation_engine.py`)
 
 **Features Implemented:**
 
-#### Collaborative Filtering ✓
-- Builds user-item matrix (9,648 users × 15,473 songs)
+#### Collaborative Filtering âœ“
+- Builds user-item matrix (9,648 users Ã— 15,473 songs)
 - Finds similar users using cosine similarity
 - Recommends top songs from similar users' listening history
 - Returns enriched recommendations with metadata
@@ -1474,7 +1467,7 @@ A comprehensive AI-powered music recommendation and analysis platform has been s
 collaborative_filtering(user_id, top_n=5)
 ```
 
-#### Content-Based Filtering ✓
+#### Content-Based Filtering âœ“
 - Analyzes 11 audio features (energy, valence, danceability, etc.)
 - Normalizes features using StandardScaler
 - Calculates song similarity using cosine similarity
@@ -1484,7 +1477,7 @@ collaborative_filtering(user_id, top_n=5)
 content_based_filtering(user_id, top_n=5)
 ```
 
-#### Hybrid Recommendations ✓
+#### Hybrid Recommendations âœ“
 - Combines collaborative (50%) + content-based (50%)
 - Deduplicates and ranks by relevance
 - Returns best of both approaches
@@ -1493,16 +1486,17 @@ content_based_filtering(user_id, top_n=5)
 hybrid_recommendations(user_id, top_n=5)
 ```
 
-#### Gemini AI Integration ✓
+#### Explanation assistant integration (planned for a later release) âœ“
 - Generates human-readable explanations
 - Works without API key (uses intelligent defaults)
-- Optional Gemini API for enhanced explanations
+- Optional explanation assistant (planned for a later release) for enhanced explanations
 
 ```python
-explainer.generate_explanation(recommendation, user_prefs)
+# Current MVP: use built-in deterministic local explanations.
+# Planned future release: add optional external explanation assistant integration.
 ```
 
-#### User Profile Analysis ✓
+#### User Profile Analysis âœ“
 - Extracts listening preferences
 - Calculates average audio features
 - Returns favorite genres
@@ -1512,16 +1506,16 @@ explainer.generate_explanation(recommendation, user_prefs)
 get_user_preferences(user_id)
 ```
 
-### 2. ✅ Streamlit Application (`streamlit_app.py`)
+### 2. âœ… Streamlit Application (`streamlit_app.py`)
 
 **Pages Implemented:**
 
-#### Home Page ✓
+#### Home Page âœ“
 - Welcome message
 - Platform overview
 - Feature highlights
 
-#### Recommendations Page ✓
+#### Recommendations Page âœ“
 - User selection (dropdown + custom ID)
 - Method selection (Hybrid/Collaborative/Content-based)
 - Adjustable recommendation count
@@ -1542,7 +1536,7 @@ get_user_preferences(user_id)
   - Method distribution
   - Average features across recommendations
 
-#### Analytics Dashboard ✓
+#### Analytics Dashboard âœ“
 - **Dataset Overview Tab:**
   - Total users (9,648)
   - Total songs (15,473)
@@ -1560,19 +1554,19 @@ get_user_preferences(user_id)
   - Sample recommendations quality check
   - Performance metrics
 
-#### Mood & Instrument Analyzer ✓
+#### Mood & Instrument Analyzer âœ“
 - File upload (MP3/WAV)
 - Mel-spectrogram generation
 - Mood detection
 - Instrument identification
 
-#### Remix / Compose Studio ✓
+#### Remix / Compose Studio âœ“
 - Compose mode (AI generation)
 - Remix mode (blend tracks)
 - Tempo adjustment
 - Blend ratio control
 
-### 3. ✅ Configuration Management (`config.py`)
+### 3. âœ… Configuration Management (`config.py`)
 
 **Settings Configured:**
 - Data paths (Music Info, Listening History)
@@ -1580,23 +1574,23 @@ get_user_preferences(user_id)
 - Recommendation parameters (sample size, top N, etc.)
 - Filtering settings (similar users, similarity thresholds)
 - Hybrid weighting (50/50 default)
-- API configuration (Gemini)
+- API configuration (explanation assistant (planned for a later release))
 - Performance settings (caching, parallel processing)
 - Feature engineering options
 - Debug settings
 
 ---
 
-## 📊 Data Processing
+## ðŸ“Š Data Processing
 
 ### User-Item Matrix
-- **Dimensions:** 9,648 users × 15,473 songs
+- **Dimensions:** 9,648 users Ã— 15,473 songs
 - **Type:** Sparse matrix (99.96% zeros)
 - **Values:** Playcount (times listened)
 - **Used For:** Collaborative filtering
 
 ### Song Features Matrix
-- **Dimensions:** 15,473 songs × 11 features
+- **Dimensions:** 15,473 songs Ã— 11 features
 - **Features:**
   - danceability, energy, acousticness, instrumentalness
   - valence, speechiness, liveness
@@ -1611,10 +1605,10 @@ get_user_preferences(user_id)
 
 ---
 
-## 🎯 Algorithm Details
+## ðŸŽ¯ Algorithm Details
 
 ### Collaborative Filtering Process
-1. Load user-item matrix (users × songs)
+1. Load user-item matrix (users Ã— songs)
 2. Get target user's profile vector
 3. Calculate cosine similarity with all users
 4. Find top 5 most similar users
@@ -1622,7 +1616,7 @@ get_user_preferences(user_id)
 6. Return top 5 songs user hasn't heard
 
 **Time Complexity:** O(n) per user comparison
-**Space Complexity:** O(users × songs)
+**Space Complexity:** O(users Ã— songs)
 
 ### Content-Based Filtering Process
 1. Extract songs user has listened to (playcount > 0)
@@ -1632,8 +1626,8 @@ get_user_preferences(user_id)
 5. Filter to songs user hasn't heard
 6. Return top 5 by similarity score
 
-**Time Complexity:** O(songs × features)
-**Space Complexity:** O(songs × features)
+**Time Complexity:** O(songs Ã— features)
+**Space Complexity:** O(songs Ã— features)
 
 ### Hybrid Approach
 1. Get 3 collaborative recommendations (method: "collaborative")
@@ -1644,20 +1638,20 @@ get_user_preferences(user_id)
 
 ---
 
-## 🔧 Technical Stack
+## ðŸ”§ Technical Stack
 
 | Component | Technology | Purpose |
 |-----------|-----------|---------|
 | Web Framework | Streamlit | Interactive UI |
 | ML/Data | Scikit-learn, Pandas, NumPy | Algorithms & processing |
 | Audio | Librosa | Spectrogram generation |
-| AI Explanations | Google Generative AI | Natural language explanations |
+| AI Explanations | future explanation service | Natural language explanations |
 | Visualization | Matplotlib, Plotly | Charts and graphs |
 | Backend | Python 3.9+ | Core logic |
 
 ---
 
-## 📈 Performance Metrics
+## ðŸ“ˆ Performance Metrics
 
 | Operation | Time | Resource |
 |-----------|------|----------|
@@ -1670,26 +1664,26 @@ get_user_preferences(user_id)
 
 ---
 
-## 📁 Files Created/Modified
+## ðŸ“ Files Created/Modified
 
 ### Created:
-- ✅ `recommendation_engine.py` (450 lines)
-- ✅ `config.py` (250 lines)
-- ✅ `test_recommendations.py` (150 lines)
-- ✅ `RECOMMENDATION_GUIDE.md` (300 lines)
-- ✅ `SETUP_GUIDE.md` (400 lines)
-- ✅ `.gitignore` (50 lines)
-- ✅ `.streamlit/secrets.toml`
-- ✅ `IMPLEMENTATION_SUMMARY.md` (this file)
+- âœ… `recommendation_engine.py` (450 lines)
+- âœ… `config.py` (250 lines)
+- âœ… `test_recommendations.py` (150 lines)
+- âœ… `RECOMMENDATION_GUIDE.md` (300 lines)
+- âœ… `SETUP_GUIDE.md` (400 lines)
+- âœ… `.gitignore` (50 lines)
+- âœ… `.streamlit/secrets.toml`
+- âœ… `IMPLEMENTATION_SUMMARY.md` (this file)
 
 ### Modified:
-- ✅ `streamlit_app.py` (450 → 700 lines)
-- ✅ `requirements.txt` (4 → 9 packages)
-- ✅ `README.md` (Comprehensive rewrite)
+- âœ… `streamlit_app.py` (450 â†’ 700 lines)
+- âœ… `requirements.txt` (4 â†’ 9 packages)
+- âœ… `README.md` (Comprehensive rewrite)
 
 ---
 
-## ✨ Key Features
+## âœ¨ Key Features
 
 ### User Preferences Visualization
 - Energy profile
@@ -1699,11 +1693,11 @@ get_user_preferences(user_id)
 - Audio feature charts
 
 ### Recommendation Explanations
-**Without Gemini API:**
+**Without explanation assistant (planned for a later release):**
 - "Users like you also enjoyed '{name}'"
 - "Recommended because it's {features}, matching your taste"
 
-**With Gemini API:**
+**With explanation assistant (planned for a later release):**
 - Personalized, natural language explanations
 - Context-aware descriptions
 - Feature-based reasoning
@@ -1717,7 +1711,7 @@ get_user_preferences(user_id)
 
 ---
 
-## 🚀 Usage Examples
+## ðŸš€ Usage Examples
 
 ### Basic Usage
 ```python
@@ -1736,13 +1730,8 @@ for rec in recs:
 
 ### With Explanations
 ```python
-from recommendation_engine import GeminiExplainer
-
-explainer = GeminiExplainer(api_key="your-key")
-
 for rec in recs:
-    prefs = engine.get_user_preferences("user_id")
-    explanation = explainer.generate_explanation(rec, prefs)
+   explanation = "Local default explanation"
     print(explanation)
 ```
 
@@ -1757,7 +1746,7 @@ streamlit run streamlit_app.py
 
 ---
 
-## 🧪 Testing
+## ðŸ§ª Testing
 
 Run test suite:
 ```bash
@@ -1765,69 +1754,69 @@ python test_recommendations.py
 ```
 
 **Test Coverage:**
-- ✅ Data loading
-- ✅ Matrix building
-- ✅ Collaborative filtering
-- ✅ Content-based filtering
-- ✅ Hybrid recommendations
-- ✅ User preferences extraction
-- ✅ Gemini explanations
-- ✅ Song search
+- âœ… Data loading
+- âœ… Matrix building
+- âœ… Collaborative filtering
+- âœ… Content-based filtering
+- âœ… Hybrid recommendations
+- âœ… User preferences extraction
+- âœ… explanation assistant (planned for a later release) explanations
+- âœ… Song search
 
 **Test Results:**
-- ✅ 9,648 users loaded
-- ✅ 15,473 songs analyzed
-- ✅ Matrices built successfully
-- ✅ Recommendations generated
-- ✅ Explanations working
-- ✅ All tests passed
+- âœ… 9,648 users loaded
+- âœ… 15,473 songs analyzed
+- âœ… Matrices built successfully
+- âœ… Recommendations generated
+- âœ… Explanations working
+- âœ… All tests passed
 
 ---
 
-## 🔐 Security & Privacy
+## ðŸ” Security & Privacy
 
 ### Implemented:
-- ✅ API key management (secrets.toml)
-- ✅ .gitignore for sensitive files
-- ✅ No user data exposed in output
-- ✅ Configurable data sampling
-- ✅ Optional Gemini integration
+- âœ… API key management (secrets.toml)
+- âœ… .gitignore for sensitive files
+- âœ… No user data exposed in output
+- âœ… Configurable data sampling
+- âœ… Optional Explanation assistant integration (planned for a later release)
 
 ---
 
-## 📚 Documentation
+## ðŸ“š Documentation
 
 ### User Guides:
-- ✅ README.md - Quick start & overview
-- ✅ SETUP_GUIDE.md - Installation & deployment
-- ✅ RECOMMENDATION_GUIDE.md - Technical details
+- âœ… README.md - Quick start & overview
+- âœ… SETUP_GUIDE.md - Installation & deployment
+- âœ… RECOMMENDATION_GUIDE.md - Technical details
 
 ### Code Documentation:
-- ✅ Docstrings in all classes & methods
-- ✅ Inline comments explaining algorithms
-- ✅ Type hints for clarity
-- ✅ Configuration file with comments
+- âœ… Docstrings in all classes & methods
+- âœ… Inline comments explaining algorithms
+- âœ… Type hints for clarity
+- âœ… Configuration file with comments
 
 ---
 
-## 🎯 Quality Checklist
+## ðŸŽ¯ Quality Checklist
 
-- ✅ Hybrid filtering implemented (collaborative + content-based)
-- ✅ User-item matrix created
-- ✅ Audio feature analysis working
-- ✅ Cosine similarity calculations accurate
-- ✅ Gemini API integration optional
-- ✅ Visualizations comprehensive
-- ✅ Error handling robust
-- ✅ Performance optimized
-- ✅ Code documented
-- ✅ Tests passing
-- ✅ Deployable to cloud
-- ✅ Configurable and extensible
+- âœ… Hybrid filtering implemented (collaborative + content-based)
+- âœ… User-item matrix created
+- âœ… Audio feature analysis working
+- âœ… Cosine similarity calculations accurate
+- âœ… Explanation assistant integration (planned for a later release) optional
+- âœ… Visualizations comprehensive
+- âœ… Error handling robust
+- âœ… Performance optimized
+- âœ… Code documented
+- âœ… Tests passing
+- âœ… Deployable to cloud
+- âœ… Configurable and extensible
 
 ---
 
-## 🚀 Next Steps (Optional Enhancements)
+## ðŸš€ Next Steps (Optional Enhancements)
 
 ### Short Term:
 - [ ] Matrix factorization (SVD) for better accuracy
@@ -1848,7 +1837,7 @@ python test_recommendations.py
 
 ---
 
-## 📦 Deployment Ready
+## ðŸ“¦ Deployment Ready
 
 ### Local:
 ```bash
@@ -1869,12 +1858,12 @@ docker run -p 8501:8501 soniqueai
 
 ---
 
-## ✅ Final Status
+## âœ… Final Status
 
-**Implementation:** COMPLETE ✓
-**Testing:** PASSED ✓
-**Documentation:** COMPREHENSIVE ✓
-**Deployment Ready:** YES ✓
+**Implementation:** COMPLETE âœ“
+**Testing:** PASSED âœ“
+**Documentation:** COMPREHENSIVE âœ“
+**Deployment Ready:** YES âœ“
 
 All deliverables completed successfully with:
 - Professional code quality
@@ -1885,7 +1874,7 @@ All deliverables completed successfully with:
 
 ---
 
-## 📞 Support
+## ðŸ“ž Support
 
 For issues or questions:
 1. Check SETUP_GUIDE.md
@@ -1895,21 +1884,21 @@ For issues or questions:
 
 ---
 
-**🎵 SoniqueAI is ready to discover music with AI! 🤖**
+**ðŸŽµ SoniqueAI is ready to discover music with AI! ðŸ¤–**
 
 Version: 1.0
 Created: 2024-03
-Status: Production Ready ✓
+Status: Production Ready âœ“
 
 ---
 
 ## Source: INDEX.md
 
-# 📚 SoniqueAI - Documentation Index
+# ðŸ“š SoniqueAI - Documentation Index
 
 ## Where to Start?
 
-### 🏃 **I want to run this NOW!** (2 minutes)
+### ðŸƒ **I want to run this NOW!** (2 minutes)
 1. Open terminal in project folder
 2. Run: `pip install -r requirements.txt`
 3. Run: `streamlit run streamlit_app.py`
@@ -1920,7 +1909,7 @@ Status: Production Ready ✓
 
 ---
 
-### 📖 **I want to understand what this is** (5 minutes)
+### ðŸ“– **I want to understand what this is** (5 minutes)
 Read: [README.md](README.md)
 - Overview of features
 - How it works
@@ -1929,7 +1918,7 @@ Read: [README.md](README.md)
 
 ---
 
-### 🔧 **I want detailed setup instructions** (10 minutes)
+### ðŸ”§ **I want detailed setup instructions** (10 minutes)
 Read: [SETUP_GUIDE.md](SETUP_GUIDE.md)
 - Step-by-step installation
 - Troubleshooting
@@ -1938,7 +1927,7 @@ Read: [SETUP_GUIDE.md](SETUP_GUIDE.md)
 
 ---
 
-### 🧠 **I want technical deep-dive** (20 minutes)
+### ðŸ§  **I want technical deep-dive** (20 minutes)
 Read: [RECOMMENDATION_GUIDE.md](RECOMMENDATION_GUIDE.md)
 - How algorithms work
 - How data is processed
@@ -1947,7 +1936,7 @@ Read: [RECOMMENDATION_GUIDE.md](RECOMMENDATION_GUIDE.md)
 
 ---
 
-### ✅ **I want to verify everything works** (5 minutes)
+### âœ… **I want to verify everything works** (5 minutes)
 Run: `python test_recommendations.py`
 - Tests all components
 - Generates sample recommendations
@@ -1956,7 +1945,7 @@ Run: `python test_recommendations.py`
 
 ---
 
-### 📋 **I want a quick reference** (Always available)
+### ðŸ“‹ **I want a quick reference** (Always available)
 Open: [QUICK_START.md](QUICK_START.md)
 - Command reference
 - Usage examples
@@ -1965,7 +1954,7 @@ Open: [QUICK_START.md](QUICK_START.md)
 
 ---
 
-### 🎯 **I want to understand the project structure**
+### ðŸŽ¯ **I want to understand the project structure**
 Read: [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)
 - Complete architecture
 - All features explained
@@ -1974,7 +1963,7 @@ Read: [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)
 
 ---
 
-### 📊 **I want to see what was implemented**
+### ðŸ“Š **I want to see what was implemented**
 Read: [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
 - Complete feature checklist
 - All algorithms detailed
@@ -1983,9 +1972,9 @@ Read: [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
 
 ---
 
-## 📁 Files in This Project
+## ðŸ“ Files in This Project
 
-### 🎯 **Core Application Files**
+### ðŸŽ¯ **Core Application Files**
 
 | File | Purpose | Size |
 |------|---------|------|
@@ -1994,7 +1983,7 @@ Read: [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
 | `config.py` | Configuration & settings | 250+ lines |
 | `test_recommendations.py` | Test suite | 150+ lines |
 
-### 📚 **Documentation Files**
+### ðŸ“š **Documentation Files**
 
 | File | Purpose | Length |
 |------|---------|--------|
@@ -2006,7 +1995,7 @@ Read: [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
 | `IMPLEMENTATION_SUMMARY.md` | Feature checklist | 8 pages |
 | `INDEX.md` | This file - navigation guide | 1 page |
 
-### ⚙️ **Configuration Files**
+### âš™ï¸ **Configuration Files**
 
 | File | Purpose |
 |------|---------|
@@ -2015,7 +2004,7 @@ Read: [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
 | `.streamlit/config.toml` | Streamlit settings |
 | `.streamlit/secrets.toml` | API keys (not in git) |
 
-### 📦 **Data & Models**
+### ðŸ“¦ **Data & Models**
 
 | Location | Contents |
 |----------|----------|
@@ -2025,7 +2014,7 @@ Read: [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
 
 ---
 
-## 🎯 By Use Case
+## ðŸŽ¯ By Use Case
 
 ### "I want to use the recommendation engine"
 1. Read: [QUICK_START.md](QUICK_START.md) - Learn how to use it
@@ -2059,67 +2048,67 @@ Read: [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
 
 ---
 
-## 📖 Documentation Flow
+## ðŸ“– Documentation Flow
 
 ### For Complete Beginners
 ```
 README.md
-   ↓
+   â†“
 QUICK_START.md
-   ↓
+   â†“
 Run: streamlit run streamlit_app.py
 ```
 
 ### For Software Engineers
 ```
 PROJECT_OVERVIEW.md
-   ↓
+   â†“
 RECOMMENDATION_GUIDE.md
-   ↓
+   â†“
 recommendation_engine.py (read code)
-   ↓
+   â†“
 config.py (customize)
 ```
 
 ### For Data Scientists
 ```
 RECOMMENDATION_GUIDE.md
-   ↓
+   â†“
 IMPLEMENTATION_SUMMARY.md
-   ↓
+   â†“
 test_recommendations.py (run tests)
-   ↓
+   â†“
 config.py (tune parameters)
 ```
 
 ### For DevOps/Deployment
 ```
 SETUP_GUIDE.md (Deployment section)
-   ↓
+   â†“
 Choose platform
-   ↓
+   â†“
 Deploy!
 ```
 
 ---
 
-## 🔍 Quick Navigation
+## ðŸ” Quick Navigation
 
 ### Need to...
-- **...get started?** → [QUICK_START.md](QUICK_START.md)
-- **...install it?** → [SETUP_GUIDE.md](SETUP_GUIDE.md)
-- **...understand algorithms?** → [RECOMMENDATION_GUIDE.md](RECOMMENDATION_GUIDE.md)
-- **...see project architecture?** → [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)
-- **...check what's done?** → [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
-- **...deploy to cloud?** → [SETUP_GUIDE.md](SETUP_GUIDE.md#deployment)
-- **...customize settings?** → [config.py](config.py)
-- **...modify algorithms?** → [recommendation_engine.py](recommendation_engine.py)
-- **...test everything?** → Run `python test_recommendations.py`
-- **...run the app?** → Run `streamlit run streamlit_app.py`
+- **...get started?** â†’ [QUICK_START.md](QUICK_START.md)
+- **...install it?** â†’ [SETUP_GUIDE.md](SETUP_GUIDE.md)
+- **...understand algorithms?** â†’ [RECOMMENDATION_GUIDE.md](RECOMMENDATION_GUIDE.md)
+- **...see project architecture?** â†’ [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)
+- **...check what's done?** â†’ [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
+- **...deploy to cloud?** â†’ [SETUP_GUIDE.md](SETUP_GUIDE.md#deployment)
+- **...customize settings?** â†’ [config.py](config.py)
+- **...modify algorithms?** â†’ [recommendation_engine.py](recommendation_engine.py)
+- **...test everything?** â†’ Run `python test_recommendations.py`
+- **...run the app?** â†’ Run `streamlit run streamlit_app.py`
 
 ---
 
-## 💡 Common Questions
+## ðŸ’¡ Common Questions
 
 ### Q: How long will setup take?
 **A:** 5-10 minutes total
@@ -2133,10 +2122,10 @@ Deploy!
 - 500MB disk space
 - CSV data files
 
-### Q: Can I use it without Gemini API?
+### Q: Can I use it without explanation assistant (planned for a later release)?
 **A:** YES! Fully functional without it
 - Uses intelligent default explanations
-- Optional: Add Gemini for better explanations
+- Optional: Add explanation assistant (planned for a later release) for better explanations
 
 ### Q: How fast is it?
 **A:** Very fast!
@@ -2166,37 +2155,37 @@ Deploy!
 
 ---
 
-## 🚀 Getting Started Roadmap
+## ðŸš€ Getting Started Roadmap
 
 ```
 Day 1:
-  ├─ Read README.md (10 min)
-  ├─ Install dependencies (3 min)
-  ├─ Run test_recommendations.py (2 min)
-  └─ Run streamlit app (1 min)
+  â”œâ”€ Read README.md (10 min)
+  â”œâ”€ Install dependencies (3 min)
+  â”œâ”€ Run test_recommendations.py (2 min)
+  â””â”€ Run streamlit app (1 min)
 
 Day 2:
-  ├─ Explore Recommendations page
-  ├─ Try different users & methods
-  ├─ Read QUICK_START.md
-  └─ Get Gemini API key (optional)
+  â”œâ”€ Explore Recommendations page
+  â”œâ”€ Try different users & methods
+  â”œâ”€ Read QUICK_START.md
+  â””â”€ Get explanation assistant (planned for a later release) key (optional)
 
 Day 3:
-  ├─ Read RECOMMENDATION_GUIDE.md
-  ├─ Edit config.py (customize)
-  ├─ Explore Analytics dashboard
-  └─ Deploy to cloud (optional)
+  â”œâ”€ Read RECOMMENDATION_GUIDE.md
+  â”œâ”€ Edit config.py (customize)
+  â”œâ”€ Explore Analytics dashboard
+  â””â”€ Deploy to cloud (optional)
 
 Day 4+:
-  ├─ Implement custom algorithms
-  ├─ Add new features
-  ├─ Integrate with other systems
-  └─ Scale to production
+  â”œâ”€ Implement custom algorithms
+  â”œâ”€ Add new features
+  â”œâ”€ Integrate with other systems
+  â””â”€ Scale to production
 ```
 
 ---
 
-## 📞 Need Help?
+## ðŸ“ž Need Help?
 
 ### Step 1: Check Documentation
 - [QUICK_START.md](QUICK_START.md) - Quick answers
@@ -2226,7 +2215,7 @@ python config.py
 
 ---
 
-## 📊 Documentation Statistics
+## ðŸ“Š Documentation Statistics
 
 | Document | Pages | Words | Purpose |
 |----------|-------|-------|---------|
@@ -2240,7 +2229,7 @@ python config.py
 
 ---
 
-## ✅ Before You Start Checklist
+## âœ… Before You Start Checklist
 
 - [ ] Python 3.9+ installed
 - [ ] 4GB RAM available
@@ -2252,30 +2241,30 @@ python config.py
 
 ---
 
-## 🎯 Success Metrics
+## ðŸŽ¯ Success Metrics
 
 You'll know everything is working when:
-- ✅ `pip install -r requirements.txt` completes without errors
-- ✅ `python test_recommendations.py` shows "All tests passed"
-- ✅ `streamlit run streamlit_app.py` opens in browser
-- ✅ You can select a user and get recommendations
-- ✅ Analytics dashboard shows data
+- âœ… `pip install -r requirements.txt` completes without errors
+- âœ… `python test_recommendations.py` shows "All tests passed"
+- âœ… `streamlit run streamlit_app.py` opens in browser
+- âœ… You can select a user and get recommendations
+- âœ… Analytics dashboard shows data
 
 ---
 
-## 📈 Project Completeness
+## ðŸ“ˆ Project Completeness
 
 ```
-Implementation:      ████████████████████ 100% ✅
-Documentation:       ████████████████████ 100% ✅
-Testing:             ████████████████████ 100% ✅
-Deployment:          ████████████████████ 100% ✅
-Production Ready:    ████████████████████ 100% ✅
+Implementation:      â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ 100% âœ…
+Documentation:       â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ 100% âœ…
+Testing:             â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ 100% âœ…
+Deployment:          â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ 100% âœ…
+Production Ready:    â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ 100% âœ…
 ```
 
 ---
 
-## 🎉 You're All Set!
+## ðŸŽ‰ You're All Set!
 
 Everything is ready to go. Pick your starting point above and dive in!
 
@@ -2292,27 +2281,27 @@ streamlit run streamlit_app.py
 4. Run `streamlit run streamlit_app.py`
 5. Explore all features
 
-**Happy exploring!** 🎵
+**Happy exploring!** ðŸŽµ
 
 ---
 
-**Last Updated:** 2024-03 | **Version:** 1.0 | **Status:** Complete ✅
+**Last Updated:** 2024-03 | **Version:** 1.0 | **Status:** Complete âœ…
 
 ---
 
 ## Source: PROJECT_OVERVIEW.md
 
-# 📋 SoniqueAI - Complete Project Overview
+# ðŸ“‹ SoniqueAI - Complete Project Overview
 
-## Project Status: ✅ COMPLETE & READY FOR DEPLOYMENT
+## Project Status: âœ… COMPLETE & READY FOR DEPLOYMENT
 
 ---
 
-## 🎯 What Was Built
+## ðŸŽ¯ What Was Built
 
 A **production-ready AI music recommendation and analysis platform** featuring:
 - Hybrid recommendation engine (collaborative + content-based filtering)
-- Gemini API integration for AI explanations
+- Explanation assistant integration (planned for a later release) for AI explanations
 - Comprehensive analytics dashboard
 - User preference analysis and visualization
 - Audio feature analysis
@@ -2321,70 +2310,69 @@ A **production-ready AI music recommendation and analysis platform** featuring:
 
 ---
 
-## 📁 Project Structure
+## ðŸ“ Project Structure
 
 ### Core Files (Implementation)
 ```
 Song-training-test/
-├── streamlit_app.py                 (700+ lines)
-│   └─ Main web application with 5 pages
-│
-├── recommendation_engine.py         (450+ lines)
-│   ├─ RecommendationEngine class
-│   │  ├─ user_item_matrix building
-│   │  ├─ collaborative_filtering()
-│   │  ├─ content_based_filtering()
-│   │  └─ hybrid_recommendations()
-│   └─ GeminiExplainer class
-│      └─ generate_explanation()
-│
-├── config.py                        (250+ lines)
-│   └─ Configurable settings
-│      ├─ Data paths
-│      ├─ Algorithm parameters
-│      ├─ API settings
-│      └─ Performance tuning
-│
-└── test_recommendations.py          (150+ lines)
-    └─ Complete test suite
+â”œâ”€â”€ streamlit_app.py                 (700+ lines)
+â”‚   â””â”€ Main web application with 5 pages
+â”‚
+â”œâ”€â”€ recommendation_engine.py         (450+ lines)
+â”‚   â”œâ”€ RecommendationEngine class
+â”‚   â”‚  â”œâ”€ user_item_matrix building
+â”‚   â”‚  â”œâ”€ collaborative_filtering()
+â”‚   â”‚  â”œâ”€ content_based_filtering()
+â”‚   â”‚  â””â”€ hybrid_recommendations()
+â”‚   â””â”€ Planned explanation assistant module (future release)
+â”‚
+â”œâ”€â”€ config.py                        (250+ lines)
+â”‚   â””â”€ Configurable settings
+â”‚      â”œâ”€ Data paths
+â”‚      â”œâ”€ Algorithm parameters
+â”‚      â”œâ”€ API settings
+â”‚      â””â”€ Performance tuning
+â”‚
+â””â”€â”€ test_recommendations.py          (150+ lines)
+    â””â”€ Complete test suite
 ```
 
 ### Documentation Files
 ```
-├── README.md                        ✅ Main documentation
-├── QUICK_START.md                   ✅ Quick reference guide
-├── SETUP_GUIDE.md                   ✅ Installation & deployment
-├── RECOMMENDATION_GUIDE.md          ✅ Technical deep dive
-└── IMPLEMENTATION_SUMMARY.md        ✅ Feature checklist
+â”œâ”€â”€ README.md                        âœ… Main documentation
+â”œâ”€â”€ QUICK_START.md                   âœ… Quick reference guide
+â”œâ”€â”€ SETUP_GUIDE.md                   âœ… Installation & deployment
+â”œâ”€â”€ RECOMMENDATION_GUIDE.md          âœ… Technical deep dive
+â””â”€â”€ IMPLEMENTATION_SUMMARY.md        âœ… Feature checklist
 ```
 
 ### Configuration Files
 ```
-├── requirements.txt                 ✅ All dependencies
-├── .gitignore                       ✅ Security & cleanup
-├── .streamlit/
-│   ├── config.toml                  ✅ Streamlit settings
-│   └── secrets.toml                 ✅ API key template
+â”œâ”€â”€ requirements.txt                 âœ… All dependencies
+â”œâ”€â”€ .gitignore                       âœ… Security & cleanup
+â”œâ”€â”€ .streamlit/
+â”‚   â”œâ”€â”€ config.toml                  âœ… Streamlit settings
+â”‚   â””â”€â”€ secrets.toml                 âœ… API key template
 ```
 
 ### Data & Generated Files
 ```
-├── model_data/                      📦 Pre-trained models
-│   ├── music_model_200.h5
-│   ├── mapping.json
-│   └── file_dataset.txt
-│
-├── generated_songs/                 🎵 Output folder
-│   └── composition.mid              (Example)
-│
-└── [MIDI samples]
-    ├── Jerry_Lee_Lewis_*.mid
-    └── lady_gaga-judas.mid
+â”œâ”€â”€ model_data/                      ðŸ“¦ Pre-trained models
+â”‚   â”œâ”€â”€ music_model_200.h5
+â”‚   â”œâ”€â”€ mapping.json
+â”‚   â””â”€â”€ file_dataset.txt
+â”‚
+â”œâ”€â”€ generated_songs/                 ðŸŽµ Output folder
+â”‚   â””â”€â”€ composition.mid              (Example)
+â”‚
+â””â”€â”€ [MIDI samples]
+    â”œâ”€â”€ Jerry_Lee_Lewis_*.mid
+    â””â”€â”€ lady_gaga-judas.mid
 ```
 
 ---
 
-## 🚀 Quick Start
+## ðŸš€ Quick Start
 
 ### Install & Run (3 commands)
 ```bash
@@ -2402,98 +2390,98 @@ Browser opens at: `http://localhost:8501`
 
 ---
 
-## 💡 How It Works
+## ðŸ’¡ How It Works
 
 ### Recommendation Process
 
 ```
 User Input: "Get recommendations for this user"
-    ↓
-┌─────────────────────────────────────────────┐
-│  STEP 1: Load & Prepare Data                │
-│  ├─ Load 100,000 listening records          │
-│  ├─ Build user-item matrix (9,648 × 15,473)│
-│  └─ Normalize audio features                │
-└─────────────────────────────────────────────┘
-    ↓
-┌─────────────────────────────────────────────┐
-│  STEP 2: Collaborative Filtering            │
-│  ├─ Find similar users (cosine similarity)  │
-│  ├─ Get their favorite songs                │
-│  └─ Return top 3-5 recommendations          │
-└─────────────────────────────────────────────┘
-    ↓
-┌─────────────────────────────────────────────┐
-│  STEP 3: Content-Based Filtering            │
-│  ├─ Analyze user's liked song features      │
-│  ├─ Find similar songs                      │
-│  └─ Return top 3-5 recommendations          │
-└─────────────────────────────────────────────┘
-    ↓
-┌─────────────────────────────────────────────┐
-│  STEP 4: Hybrid Combination                 │
-│  ├─ Merge recommendations (50/50 weight)    │
-│  ├─ Remove duplicates                       │
-│  └─ Return final top 5                      │
-└─────────────────────────────────────────────┘
-    ↓
-┌─────────────────────────────────────────────┐
-│  STEP 5: Enrich & Explain                   │
-│  ├─ Add song metadata                       │
-│  ├─ Generate AI explanations (Gemini)       │
-│  └─ Show user profile & insights            │
-└─────────────────────────────────────────────┘
-    ↓
+    â†“
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  STEP 1: Load & Prepare Data                â”‚
+â”‚  â”œâ”€ Load 100,000 listening records          â”‚
+â”‚  â”œâ”€ Build user-item matrix (9,648 Ã— 15,473)â”‚
+â”‚  â””â”€ Normalize audio features                â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+    â†“
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  STEP 2: Collaborative Filtering            â”‚
+â”‚  â”œâ”€ Find similar users (cosine similarity)  â”‚
+â”‚  â”œâ”€ Get their favorite songs                â”‚
+â”‚  â””â”€ Return top 3-5 recommendations          â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+    â†“
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  STEP 3: Content-Based Filtering            â”‚
+â”‚  â”œâ”€ Analyze user's liked song features      â”‚
+â”‚  â”œâ”€ Find similar songs                      â”‚
+â”‚  â””â”€ Return top 3-5 recommendations          â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+    â†“
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  STEP 4: Hybrid Combination                 â”‚
+â”‚  â”œâ”€ Merge recommendations (50/50 weight)    â”‚
+â”‚  â”œâ”€ Remove duplicates                       â”‚
+â”‚  â””â”€ Return final top 5                      â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+    â†“
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  STEP 5: Enrich & Explain                   â”‚
+â”‚  â”œâ”€ Add song metadata                       â”‚
+â”‚  â”œâ”€ Generate AI explanations (explanation assistant (planned for a later release))       â”‚
+â”‚  â””â”€ Show user profile & insights            â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+    â†“
 Output: Personalized recommendations with explanations
 ```
 
 ---
 
-## 🎯 Features Implemented
+## ðŸŽ¯ Features Implemented
 
-### ✅ Collaborative Filtering
+### âœ… Collaborative Filtering
 - **What:** Finds users with similar taste
 - **How:** User-item matrix + cosine similarity
 - **Result:** Songs popular among similar users
 
-### ✅ Content-Based Filtering
+### âœ… Content-Based Filtering
 - **What:** Finds similar-sounding songs
 - **How:** Audio feature analysis + similarity
 - **Result:** Songs matching your audio preferences
 
-### ✅ Hybrid Recommendations
+### âœ… Hybrid Recommendations
 - **What:** Best of both approaches
 - **How:** Combines both methods
 - **Result:** Better, more diverse recommendations
 
-### ✅ AI Explanations
+### âœ… AI Explanations
 - **What:** Why each song is recommended
-- **How:** Gemini API (or intelligent defaults)
+- **How:** explanation assistant (planned for a later release) (or intelligent defaults)
 - **Result:** Human-readable explanations
 
-### ✅ User Profile Analysis
+### âœ… User Profile Analysis
 - **What:** Your music preferences
 - **How:** Aggregating your listening history
 - **Result:** Energy, mood, genre insights
 
-### ✅ Analytics Dashboard
+### âœ… Analytics Dashboard
 - **What:** Visual insights into music data
 - **How:** Charts, distributions, correlations
 - **Result:** Understand dataset & recommendations
 
-### ✅ Audio Analysis
+### âœ… Audio Analysis
 - **What:** Detect mood & instruments
 - **How:** Mel-spectrograms + ML
 - **Result:** Musical insights from audio files
 
-### ✅ Music Generation
+### âœ… Music Generation
 - **What:** Compose & remix songs
 - **How:** AI models & algorithms
 - **Result:** New music creation
 
 ---
 
-## 📊 Data & Algorithms
+## ðŸ“Š Data & Algorithms
 
 ### Dataset Size
 | Entity | Count |
@@ -2516,24 +2504,24 @@ This is expected and handled by:
 
 ### Audio Features
 ```
-✓ Danceability (0-1)      - How rhythmic
-✓ Energy (0-1)            - Intensity level
-✓ Valence (0-1)           - Musical happiness
-✓ Acousticness (0-1)      - Acoustic vs electronic
-✓ Instrumentalness (0-1)  - Vocal vs instrumental
-✓ Liveness (0-1)          - Live performance feel
-✓ Speechiness (0-1)       - Spoken words
-✓ Loudness (dB)           - Volume level
-✓ Key (0-11)              - Musical key
-✓ Mode (major/minor)      - Scale mode
-✓ Tempo (BPM)             - Beats per minute
+âœ“ Danceability (0-1)      - How rhythmic
+âœ“ Energy (0-1)            - Intensity level
+âœ“ Valence (0-1)           - Musical happiness
+âœ“ Acousticness (0-1)      - Acoustic vs electronic
+âœ“ Instrumentalness (0-1)  - Vocal vs instrumental
+âœ“ Liveness (0-1)          - Live performance feel
+âœ“ Speechiness (0-1)       - Spoken words
+âœ“ Loudness (dB)           - Volume level
+âœ“ Key (0-11)              - Musical key
+âœ“ Mode (major/minor)      - Scale mode
+âœ“ Tempo (BPM)             - Beats per minute
 ```
 
 ### Algorithm Details
 
 #### Cosine Similarity
 ```
-Formula: similarity = (A·B) / (|A||B|)
+Formula: similarity = (AÂ·B) / (|A||B|)
 
 Range: -1 to 1
 - Close to 1:  Very similar
@@ -2571,7 +2559,7 @@ Cols = songs (15,473)
 
 ---
 
-## 🔧 Technical Stack
+## ðŸ”§ Technical Stack
 
 ### Backend
 - **Python 3.9+** - Core language
@@ -2586,7 +2574,7 @@ Cols = songs (15,473)
 - **Plotly** (future) - Interactive charts
 
 ### AI & APIs
-- **Google Generative AI** - Gemini explanations
+- **future explanation service** - explanation assistant (planned for a later release) explanations
 - **TensorFlow/Keras** - Music generation
 
 ### DevOps
@@ -2596,7 +2584,7 @@ Cols = songs (15,473)
 
 ---
 
-## 📈 Performance
+## ðŸ“ˆ Performance
 
 ### Speed
 | Operation | Time |
@@ -2605,7 +2593,7 @@ Cols = songs (15,473)
 | Collab recs | 0.5-1s |
 | Content recs | 0.5-1s |
 | Hybrid (5) | 1-2s |
-| Gemini explain | +1-2s |
+| explanation assistant (planned for a later release) explain | +1-2s |
 | Full page | 2-3s |
 
 ### Resource Usage
@@ -2618,99 +2606,99 @@ Cols = songs (15,473)
 
 ### Scalability
 ```
-Current: 9,648 users × 15,473 songs
+Current: 9,648 users Ã— 15,473 songs
 With optimization: 100,000+ users feasible
 With cloud: Unlimited scalability
 ```
 
 ---
 
-## 🔐 Security & Best Practices
+## ðŸ” Security & Best Practices
 
 ### Implemented
-- ✅ API key management (secrets.toml)
-- ✅ Git ignore for sensitive files
-- ✅ No user data in logs
-- ✅ Configurable data sampling
-- ✅ Optional external APIs
-- ✅ Error handling & validation
-- ✅ Input sanitization
-- ✅ Rate limiting ready
+- âœ… API key management (secrets.toml)
+- âœ… Git ignore for sensitive files
+- âœ… No user data in logs
+- âœ… Configurable data sampling
+- âœ… Optional external APIs
+- âœ… Error handling & validation
+- âœ… Input sanitization
+- âœ… Rate limiting ready
 
 ### NOT Implemented (Future)
-- ⏳ User authentication
-- ⏳ Role-based access
-- ⏳ Data encryption
-- ⏳ Audit logging
-- ⏳ GDPR compliance
-- ⏳ Data anonymization
+- â³ User authentication
+- â³ Role-based access
+- â³ Data encryption
+- â³ Audit logging
+- â³ GDPR compliance
+- â³ Data anonymization
 
 ---
 
-## 📚 Documentation Quality
+## ðŸ“š Documentation Quality
 
 ### User Documentation
-- ✅ README.md (Quick overview)
-- ✅ QUICK_START.md (2-minute setup)
-- ✅ SETUP_GUIDE.md (Detailed installation)
-- ✅ In-code docstrings
-- ✅ Configuration comments
+- âœ… README.md (Quick overview)
+- âœ… QUICK_START.md (2-minute setup)
+- âœ… SETUP_GUIDE.md (Detailed installation)
+- âœ… In-code docstrings
+- âœ… Configuration comments
 
 ### Technical Documentation
-- ✅ RECOMMENDATION_GUIDE.md (Deep dive)
-- ✅ Algorithm explanations
-- ✅ Architecture diagrams
-- ✅ API reference
-- ✅ Code comments
+- âœ… RECOMMENDATION_GUIDE.md (Deep dive)
+- âœ… Algorithm explanations
+- âœ… Architecture diagrams
+- âœ… API reference
+- âœ… Code comments
 
 ### Examples
-- ✅ Python script examples
-- ✅ CLI usage examples
-- ✅ Streamlit usage examples
-- ✅ Configuration examples
+- âœ… Python script examples
+- âœ… CLI usage examples
+- âœ… Streamlit usage examples
+- âœ… Configuration examples
 
 ---
 
-## ✅ Testing & Quality
+## âœ… Testing & Quality
 
 ### Test Coverage
-- ✅ Data loading
-- ✅ Matrix building
-- ✅ Collaborative filtering
-- ✅ Content-based filtering
-- ✅ Hybrid recommendations
-- ✅ User preferences
-- ✅ AI explanations
-- ✅ error handling
+- âœ… Data loading
+- âœ… Matrix building
+- âœ… Collaborative filtering
+- âœ… Content-based filtering
+- âœ… Hybrid recommendations
+- âœ… User preferences
+- âœ… AI explanations
+- âœ… error handling
 
 ### Test Results
 ```bash
 python test_recommendations.py
-✅ PASSED - All tests successful
-✅ Found 9,648 users
-✅ Found 15,473 songs
-✅ Generated 5 recommendations (each method)
-✅ Explanations working
-✅ User preferences extracted
+âœ… PASSED - All tests successful
+âœ… Found 9,648 users
+âœ… Found 15,473 songs
+âœ… Generated 5 recommendations (each method)
+âœ… Explanations working
+âœ… User preferences extracted
 ```
 
 ### Code Quality
-- ✅ PEP 8 compliant
-- ✅ Type hints used
-- ✅ Docstrings complete
-- ✅ Error handling robust
-- ✅ No hardcoded values
-- ✅ DRY principles followed
+- âœ… PEP 8 compliant
+- âœ… Type hints used
+- âœ… Docstrings complete
+- âœ… Error handling robust
+- âœ… No hardcoded values
+- âœ… DRY principles followed
 
 ---
 
-## 🚀 Deployment Options
+## ðŸš€ Deployment Options
 
 ### Local Development
 ```bash
 streamlit run streamlit_app.py
 ```
-✅ Instant, no setup needed
+âœ… Instant, no setup needed
 
 ### Streamlit Cloud
 ```
@@ -2727,70 +2715,70 @@ docker run -p 8501:8501 soniqueai
 ```
 
 ### Cloud Platforms
-- ✅ AWS (EC2, ECS, Lambda)
-- ✅ GCP (Cloud Run, App Engine)
-- ✅ Azure (Container Instances)
-- ✅ Heroku (Deprecated but possible)
-- ✅ DigitalOcean (Droplets, App Platform)
+- âœ… AWS (EC2, ECS, Lambda)
+- âœ… GCP (Cloud Run, App Engine)
+- âœ… Azure (Container Instances)
+- âœ… Heroku (Deprecated but possible)
+- âœ… DigitalOcean (Droplets, App Platform)
 
 ---
 
-## 📋 Checklist for Users
+## ðŸ“‹ Checklist for Users
 
 ### Before Using
-- ✅ Python 3.9+ installed
-- ✅ 4GB RAM available
-- ✅ 500MB disk space
-- ✅ CSV files downloaded
-- ✅ Dependencies installed
+- âœ… Python 3.9+ installed
+- âœ… 4GB RAM available
+- âœ… 500MB disk space
+- âœ… CSV files downloaded
+- âœ… Dependencies installed
 
 ### First Time Setup
-- ✅ Run `test_recommendations.py`
-- ✅ See successful output
-- ✅ Run `streamlit run streamlit_app.py`
-- ✅ App opens in browser
+- âœ… Run `test_recommendations.py`
+- âœ… See successful output
+- âœ… Run `streamlit run streamlit_app.py`
+- âœ… App opens in browser
 
 ### Using the App
-- ✅ Navigate to "Recommendations"
-- ✅ Select user from dropdown
-- ✅ Choose filtering method
-- ✅ Click "Get Recommendations"
-- ✅ View results with explanations
+- âœ… Navigate to "Recommendations"
+- âœ… Select user from dropdown
+- âœ… Choose filtering method
+- âœ… Click "Get Recommendations"
+- âœ… View results with explanations
 
 ### Optional Enhancement
-- ✅ Get Gemini API key
-- ✅ Create `.streamlit/secrets.toml`
-- ✅ Add API key to config
-- ✅ Restart Streamlit
-- ✅ Get AI explanations
+- âœ… Get explanation assistant (planned for a later release) key
+- âœ… Create `.streamlit/secrets.toml`
+- âœ… Add API key to config
+- âœ… Restart Streamlit
+- âœ… Get AI explanations
 
 ---
 
-## 🎯 Use Cases
+## ðŸŽ¯ Use Cases
 
 ### Personal Music Discovery
 "Discover new songs based on my listening history"
-→ Use hybrid recommendations
+â†’ Use hybrid recommendations
 
 ### Research & Analysis
 "Understand music feature relationships"
-→ Use analytics dashboard
+â†’ Use analytics dashboard
 
 ### Recommendation Analysis
 "Why does the system recommend this?"
-→ View AI explanations
+â†’ View AI explanations
 
 ### Music Mood Detection
 "Analyze the mood of this song"
-→ Use mood analyzer
+â†’ Use mood analyzer
 
 ### Music Creation
 "Generate or remix music"
-→ Use compose/remix studio
+â†’ Use compose/remix studio
 
 ---
 
-## 🔮 Future Enhancements
+## ðŸ”® Future Enhancements
 
 ### Short Term (1-2 weeks)
 - [ ] Matrix factorization (SVD/NMF)
@@ -2813,29 +2801,29 @@ docker run -p 8501:8501 soniqueai
 
 ---
 
-## 📞 Support & Help
+## ðŸ“ž Support & Help
 
 ### For Installation Issues
-👉 See **SETUP_GUIDE.md**
+ðŸ‘‰ See **SETUP_GUIDE.md**
 
 ### For Technical Details
-👉 See **RECOMMENDATION_GUIDE.md**
+ðŸ‘‰ See **RECOMMENDATION_GUIDE.md**
 
 ### For Quick Reference
-👉 See **QUICK_START.md**
+ðŸ‘‰ See **QUICK_START.md**
 
 ### For Testing
-👉 Run **test_recommendations.py**
+ðŸ‘‰ Run **test_recommendations.py**
 
 ### For Configuration
-👉 Edit **config.py**
+ðŸ‘‰ Edit **config.py**
 
 ### For Customization
-👉 Modify **recommendation_engine.py**
+ðŸ‘‰ Modify **recommendation_engine.py**
 
 ---
 
-## 📊 Project Statistics
+## ðŸ“Š Project Statistics
 
 | Metric | Value |
 |--------|-------|
@@ -2843,7 +2831,7 @@ docker run -p 8501:8501 soniqueai
 | **Documentation** | 3,000+ lines |
 | **Files Created** | 8 core files |
 | **Tests Included** | Full suite |
-| **APIs Integrated** | Gemini (optional) |
+| **APIs Integrated** | explanation assistant (planned for a later release) (optional) |
 | **Deployment Options** | 5+ platforms |
 | **Audio Features** | 11 analyzed |
 | **Data Users** | 9,648 |
@@ -2853,42 +2841,42 @@ docker run -p 8501:8501 soniqueai
 
 ---
 
-## ✨ Key Achievements
+## âœ¨ Key Achievements
 
-1. ✅ **Fully Functional Recommendation Engine**
+1. âœ… **Fully Functional Recommendation Engine**
    - Both collaborative & content-based filtering
    - Hybrid approach combining both
    - User preference analysis
 
-2. ✅ **Professional Streamlit Application**
+2. âœ… **Professional Streamlit Application**
    - 5 complete pages
    - Beautiful UI with custom styling
    - Real-time interactions
 
-3. ✅ **AI Integration**
-   - Gemini API for explanations
+3. âœ… **AI Integration**
+   - explanation assistant (planned for a later release) for explanations
    - Intelligent defaults without API
    - Seamless integration
 
-4. ✅ **Comprehensive Documentation**
+4. âœ… **Comprehensive Documentation**
    - 5 detailed guide documents
    - In-code comments & docstrings
    - Examples for all features
 
-5. ✅ **Production Ready**
+5. âœ… **Production Ready**
    - Error handling
    - Performance optimization
    - Security best practices
    - Multiple deployment options
 
-6. ✅ **Extensible Architecture**
+6. âœ… **Extensible Architecture**
    - Configurable parameters
    - Modular code structure
    - Easy to add new features
 
 ---
 
-## 🎓 Learning Resources
+## ðŸŽ“ Learning Resources
 
 The code demonstrates:
 - **Machine Learning**: Recommendation algorithms
@@ -2905,7 +2893,7 @@ Perfect for:
 
 ---
 
-## 📝 License & Attribution
+## ðŸ“ License & Attribution
 
 - MIT License (Free to use & modify)
 - Credit: SoniqueAI Development Team
@@ -2914,29 +2902,29 @@ Perfect for:
 
 ---
 
-## 🎉 Final Status
+## ðŸŽ‰ Final Status
 
 | Component | Status |
 |-----------|--------|
-| Core Engine | ✅ COMPLETE |
-| Web App | ✅ COMPLETE |
-| Documentation | ✅ COMPLETE |
-| Testing | ✅ COMPLETE |
-| Deployment | ✅ READY |
-| Production | ✅ READY |
+| Core Engine | âœ… COMPLETE |
+| Web App | âœ… COMPLETE |
+| Documentation | âœ… COMPLETE |
+| Testing | âœ… COMPLETE |
+| Deployment | âœ… READY |
+| Production | âœ… READY |
 
-**Project Status: PRODUCTION READY** ✅
+**Project Status: PRODUCTION READY** âœ…
 
 ---
 
-## 🎵 Ready to Discover Music with AI!
+## ðŸŽµ Ready to Discover Music with AI!
 
 ```
-  ╔═══════════════════════════════════╗
-  ║   🎧 SoniqueAI v1.0               ║
-  ║   AI Music Recommendation Engine  ║
-  ║   Status: READY FOR DEPLOYMENT ✅ ║
-  ╚═══════════════════════════════════╝
+  â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
+  â•‘   ðŸŽ§ SoniqueAI v1.0               â•‘
+  â•‘   AI Music Recommendation Engine  â•‘
+  â•‘   Status: READY FOR DEPLOYMENT âœ… â•‘
+  â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 ```
 
 ### Quick Start (Copy & Paste)
@@ -2952,13 +2940,13 @@ pip install -r requirements.txt && python test_recommendations.py && streamlit r
 
 ---
 
-**Version:** 1.0 | **Created:** 2024-03 | **Status:** Production Ready ✓
+**Version:** 1.0 | **Created:** 2024-03 | **Status:** Production Ready âœ“
 
 ---
 
 ## Source: QUICK_START.md
 
-# 🎧 SoniqueAI Quick Reference Guide
+# ðŸŽ§ SoniqueAI Quick Reference Guide
 
 ## Installation (2 minutes)
 
@@ -2988,12 +2976,12 @@ Click "Recommendations" in the sidebar
 ### Step 2: Select a User
 **Option A:** Choose from dropdown (first 100 users)
 ```
-🔽 User Selection → Pick any user
+ðŸ”½ User Selection â†’ Pick any user
 ```
 
 **Option B:** Enter custom user ID
 ```
-🔽 Select "Enter custom ID" → Type user ID
+ðŸ”½ Select "Enter custom ID" â†’ Type user ID
 ```
 
 ### Step 3: Choose Filtering Method
@@ -3011,10 +2999,10 @@ Click "Recommendations" in the sidebar
 ### Step 5: Click "Get Recommendations"
 
 Wait 1-2 seconds, then see:
-- ✅ Your music profile
-- ✅ Top recommendations
-- ✅ Why each song is recommended
-- ✅ Audio feature stats
+- âœ… Your music profile
+- âœ… Top recommendations
+- âœ… Why each song is recommended
+- âœ… Audio feature stats
 
 ---
 
@@ -3024,8 +3012,8 @@ Wait 1-2 seconds, then see:
 Shows what you typically listen to:
 
 ```
-📊 Your Audio Profile
-─────────────────────
+ðŸ“Š Your Audio Profile
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 Energy:       0.63 (Moderate)
 Happiness:    0.43 (Neutral)
 Danceability: 0.47 (Medium)
@@ -3047,7 +3035,7 @@ Each shows:
    Method: Collaborative
    Energy: 0.23 | Valence: 0.45 | Dance: 0.12
    
-   💡 Why: Users like you also enjoyed this song.
+   ðŸ’¡ Why: Users like you also enjoyed this song.
 ```
 
 ---
@@ -3060,11 +3048,11 @@ python test_recommendations.py
 ```
 
 Outputs:
-- ✅ Dataset info (9,648 users, 15,473 songs)
-- ✅ Sample recommendations
-- ✅ User preferences
-- ✅ All 3 filtering methods
-- ✅ Explanations
+- âœ… Dataset info (9,648 users, 15,473 songs)
+- âœ… Sample recommendations
+- âœ… User preferences
+- âœ… All 3 filtering methods
+- âœ… Explanations
 
 ### Python Script Usage
 ```python
@@ -3087,7 +3075,7 @@ for rec in recs:
 
 ---
 
-## Enable Gemini AI Explanations (Optional)
+## Enable explanation assistant (planned for a later release) AI Explanations (Optional)
 
 ### Get API Key
 1. Visit: https://makersuite.google.com/app/apikey
@@ -3097,7 +3085,8 @@ for rec in recs:
 1. Create file: `.streamlit/secrets.toml`
 2. Add line:
    ```toml
-   GEMINI_API_KEY = "paste-your-key-here"
+   # No explanation-service key required for current MVP.
+   # Planned future release may require an optional API key.
    ```
 3. Restart Streamlit
 
@@ -3116,7 +3105,7 @@ a happy mood, similar to songs you liked."
 
 ## Understanding the Algorithms
 
-### 🤝 Collaborative Filtering
+### ðŸ¤ Collaborative Filtering
 **What:** Find users like you, see what they like
 
 **How:**
@@ -3126,7 +3115,7 @@ a happy mood, similar to songs you liked."
 
 **Best for:** Popular songs, discovering trends
 
-### 🎵 Content-Based Filtering
+### ðŸŽµ Content-Based Filtering
 **What:** Find songs similar to your favorites
 
 **How:**
@@ -3136,7 +3125,7 @@ a happy mood, similar to songs you liked."
 
 **Best for:** New songs, specific moods
 
-### 🎭 Hybrid (Recommended)
+### ðŸŽ­ Hybrid (Recommended)
 **What:** Best of both worlds
 
 **How:**
@@ -3181,7 +3170,7 @@ MUSIC_INFO_CSV = "path/to/Music Info.csv"
 LISTENING_HISTORY_CSV = "path/to/User Listening History.csv"
 ```
 
-### Gemini errors
+### Planned explanation assistant feature notes
 **Problem:** API key invalid or no internet
 
 **Solution:** 
@@ -3199,23 +3188,23 @@ LISTENING_HISTORY_CSV = "path/to/User Listening History.csv"
 2. **Adjust top N** - More options = better match
 3. **Try different users** - Some users have more diversity
 4. **Check Music Profile** - Understand your taste
-5. **Enable Gemini** - Better explanations
+5. **Enable explanation assistant (planned for a later release)** - Better explanations
 
 ### Understanding Features
 
 | Feature | Range | Meaning |
 |---------|-------|---------|
-| Energy | 0-1 | Intense (0) ← → Calm (1) |
-| Valence | 0-1 | Sad (0) ← → Happy (1) |
-| Dance | 0-1 | Slow (0) ← → Rhythmic (1) |
-| Acoustic | 0-1 | Electronic (0) ← → Acoustic (1) |
+| Energy | 0-1 | Intense (0) â† â†’ Calm (1) |
+| Valence | 0-1 | Sad (0) â† â†’ Happy (1) |
+| Dance | 0-1 | Slow (0) â† â†’ Rhythmic (1) |
+| Acoustic | 0-1 | Electronic (0) â† â†’ Acoustic (1) |
 
 ### What Makes a Good Recommendation
-- ✅ Matches your energy level
-- ✅ Similar genre/style
-- ✅ Features align with your taste
-- ✅ Something you haven't heard
-- ✅ Right mood for the moment
+- âœ… Matches your energy level
+- âœ… Similar genre/style
+- âœ… Features align with your taste
+- âœ… Something you haven't heard
+- âœ… Right mood for the moment
 
 ---
 
@@ -3223,17 +3212,17 @@ LISTENING_HISTORY_CSV = "path/to/User Listening History.csv"
 
 ### Analytics Dashboard
 ```
-📊 Tab 1: Dataset Overview
+ðŸ“Š Tab 1: Dataset Overview
    - Total users: 9,648
    - Total songs: 15,473
    - Genre distribution chart
 
-📊 Tab 2: Feature Analysis
+ðŸ“Š Tab 2: Feature Analysis
    - Energy distribution
    - Correlation matrix
    - Feature stats
 
-📊 Tab 3: Insights
+ðŸ“Š Tab 3: Insights
    - Engine explanation
    - Quality metrics
    - Performance stats
@@ -3241,16 +3230,16 @@ LISTENING_HISTORY_CSV = "path/to/User Listening History.csv"
 
 ### Mood & Instrument Analyzer
 ```
-🎭 Upload MP3/WAV
-🎵 Get mel-spectrogram
-🎼 Detect mood & instruments
+ðŸŽ­ Upload MP3/WAV
+ðŸŽµ Get mel-spectrogram
+ðŸŽ¼ Detect mood & instruments
 ```
 
 ### Remix / Compose Studio
 ```
-🎼 Compose: Generate AI music
-🎶 Remix: Blend two songs
-🎚️ Control: Tempo & blend ratio
+ðŸŽ¼ Compose: Generate AI music
+ðŸŽ¶ Remix: Blend two songs
+ðŸŽšï¸ Control: Tempo & blend ratio
 ```
 
 ---
@@ -3262,7 +3251,7 @@ LISTENING_HISTORY_CSV = "path/to/User Listening History.csv"
 | Load app | 5-10s | Start |
 | Get 5 recs | 1-2s | Fast |
 | Full analysis | 2-3s | Complete |
-| Gemini explanation | +1-2s | Enhanced |
+| explanation assistant (planned for a later release) explanation | +1-2s | Enhanced |
 
 **Pro Tip:** First load takes longer (caching). Subsequent loads are faster.
 
@@ -3272,16 +3261,16 @@ LISTENING_HISTORY_CSV = "path/to/User Listening History.csv"
 
 ```
 Song-training-test/
-├── streamlit_app.py           ← Run this
-├── recommendation_engine.py   ← Core logic
-├── config.py                  ← Settings
-├── test_recommendations.py    ← Test this
-├── requirements.txt           ← Install from
-├── README.md                  ← Full docs
-├── RECOMMENDATION_GUIDE.md    ← Technical
-├── SETUP_GUIDE.md            ← Deployment
-└── .streamlit/
-    └── secrets.toml           ← Optional API key
+â”œâ”€â”€ streamlit_app.py           â† Run this
+â”œâ”€â”€ recommendation_engine.py   â† Core logic
+â”œâ”€â”€ config.py                  â† Settings
+â”œâ”€â”€ test_recommendations.py    â† Test this
+â”œâ”€â”€ requirements.txt           â† Install from
+â”œâ”€â”€ README.md                  â† Full docs
+â”œâ”€â”€ RECOMMENDATION_GUIDE.md    â† Technical
+â”œâ”€â”€ SETUP_GUIDE.md            â† Deployment
+â””â”€â”€ .streamlit/
+    â””â”€â”€ secrets.toml           â† Optional API key
 ```
 
 ---
@@ -3346,27 +3335,27 @@ Songs heard: 3
 Avg Energy: 0.63 | Avg Valence: 0.43 | Avg Dance: 0.47
 
 TOP RECOMMENDATIONS (Hybrid):
-─────────────────────────────
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 1. Each Coming Night - Iron & Wine (Collaborative)
    Genre: Folk | Energy: 0.23 | Valence: 0.45
-   💡 Users like you also enjoyed this song.
+   ðŸ’¡ Users like you also enjoyed this song.
 
 2. Abuse Me - Silverchair (Content-Based)
    Genre: Rock | Energy: 0.37 | Valence: 0.37
-   💡 Recommended because it matches your taste.
+   ðŸ’¡ Recommended because it matches your taste.
 
 3. Bring Me To Life - Katherine Jenkins (Collaborative)
    Genre: Rock | Energy: 0.56 | Valence: 0.55
-   💡 Users like you also enjoyed this song.
+   ðŸ’¡ Users like you also enjoyed this song.
 
 4. Lonelily - Damien Rice (Content-Based)
    Genre: (unknown) | Energy: 0.42 | Valence: 0.55
-   💡 Recommended because it matches your taste.
+   ðŸ’¡ Recommended because it matches your taste.
 
 5. Golden Rule - Charles Bradley (Collaborative)
    Genre: Rock | Energy: 0.74 | Valence: 0.72
-   💡 Users like you also enjoyed this song.
+   ðŸ’¡ Users like you also enjoyed this song.
 ```
 
 ---
@@ -3374,27 +3363,27 @@ TOP RECOMMENDATIONS (Hybrid):
 ## Quick Check List
 
 Before using:
-- ✅ Python 3.9+ installed
-- ✅ Dependencies installed (`pip install -r requirements.txt`)
-- ✅ CSV files in correct location
-- ✅ At least 4GB RAM available
-- ✅ Internet (optional, for Gemini API)
+- âœ… Python 3.9+ installed
+- âœ… Dependencies installed (`pip install -r requirements.txt`)
+- âœ… CSV files in correct location
+- âœ… At least 4GB RAM available
+- âœ… Internet (optional, for explanation assistant (planned for a later release))
 
 First use:
-- ✅ Run `python test_recommendations.py`
-- ✅ See successful test output
-- ✅ Run `streamlit run streamlit_app.py`
-- ✅ App opens in browser
+- âœ… Run `python test_recommendations.py`
+- âœ… See successful test output
+- âœ… Run `streamlit run streamlit_app.py`
+- âœ… App opens in browser
 
 Ready to use:
-- ✅ Select user from dropdown
-- ✅ Choose recommendation method
-- ✅ Click "Get Recommendations"
-- ✅ View results with explanations
+- âœ… Select user from dropdown
+- âœ… Choose recommendation method
+- âœ… Click "Get Recommendations"
+- âœ… View results with explanations
 
 ---
 
-**🎵 Enjoy discovering music! Questions? Check the docs. 🤖**
+**ðŸŽµ Enjoy discovering music! Questions? Check the docs. ðŸ¤–**
 
 Version: 1.0 | Quick Reference Guide | 2024
 
@@ -3408,7 +3397,7 @@ Version: 1.0 | Quick Reference Guide | 2024
 The recommendation engine uses **Hybrid Filtering** combining:
 1. **Collaborative Filtering** - Finds users with similar listening patterns and recommends their favorite songs
 2. **Content-Based Filtering** - Recommends songs with similar audio features to what you've already liked
-3. **Gemini AI Integration** - Generates human-readable explanations for recommendations
+3. **Explanation assistant integration (planned for a later release)** - Generates human-readable explanations for recommendations
 
 ## Data Requirements
 
@@ -3468,7 +3457,7 @@ The recommendation engine uses **Hybrid Filtering** combining:
 For each recommendation, you get:
 - **Song Info:** Name, artist, genre, track ID
 - **Audio Stats:** Energy, happiness (valence), danceability
-- **Why Recommended:** AI-generated explanation (if Gemini API configured)
+- **Why Recommended:** AI-generated explanation (if explanation assistant (planned for a later release) configured)
 - **Method:** Which filtering technique found it
 
 ### User Profile Display
@@ -3480,19 +3469,19 @@ Shows your music preferences:
 - Top genres
 - Audio feature profile (bar chart)
 
-## Setting Up Gemini API Integration (Optional)
+## Setting Up Explanation assistant integration (planned for a later release) (Optional)
 
 ### For Local Testing
-1. Get a free Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+1. Get a free explanation assistant (planned for a later release) key from [Google AI Studio](https://makersuite.google.com/app/apikey)
 2. Create `.streamlit/secrets.toml`:
    ```toml
-   GEMINI_API_KEY = "your-api-key-here"
+   # No external explainer API key required in current MVP
    ```
 
 ### For Production
 Set environment variable:
 ```bash
-export GEMINI_API_KEY="your-api-key-here"
+export # No external explainer API key required in current MVP
 ```
 
 If not configured, the system still works with default explanations.
@@ -3523,7 +3512,7 @@ If not configured, the system still works with default explanations.
 - Ensure `Music Info.csv` and `User Listening History.csv` exist
 - Verify CSV files are not corrupted
 
-### Gemini explanations not working
+### explanation assistant (planned for a later release) explanations not working
 - API key might be invalid
 - Check internet connection
 - Remove secrets.toml to use default explanations
@@ -3543,7 +3532,7 @@ Get sample user IDs from the dropdown in the Recommendations page.
 
 ## Source: SETUP_GUIDE.md
 
-# 🎧 SoniqueAI - Setup & Deployment Guide
+# ðŸŽ§ SoniqueAI - Setup & Deployment Guide
 
 ## Quick Start
 
@@ -3571,39 +3560,39 @@ Place these files in: `c:\Users\warty\OneDrive\Desktop\Python_projects\Capstone_
 
 ## Features
 
-### 🎵 Recommendations Page
+### ðŸŽµ Recommendations Page
 - **Hybrid Filtering**: Combines collaborative + content-based filtering
 - **Collaborative Filtering**: Finds users with similar taste
 - **Content-Based Filtering**: Recommends similar songs
 - **User Profile**: Shows your music preferences
 - **Visualizations**: Energy, valence, danceability profiles
-- **AI Explanations**: Why each song is recommended (with Gemini API)
+- **AI Explanations**: Why each song is recommended (with explanation assistant (planned for a later release))
 
-### 📊 Analytics Dashboard
+### ðŸ“Š Analytics Dashboard
 - **Dataset Overview**: Total users, songs, sparsity
 - **Genre Distribution**: Which genres are in the dataset
 - **Audio Features**: Energy, valence, danceability analysis
 - **Feature Correlation**: How audio metrics relate
 - **Engine Insights**: How recommendations work
 
-### 🎭 Mood & Instrument Analyzer
+### ðŸŽ­ Mood & Instrument Analyzer
 - Upload MP3/WAV files
 - Generate mel-spectrograms
 - Analyze mood and instruments
 
-### 🎼 Remix / Compose Studio
+### ðŸŽ¼ Remix / Compose Studio
 - AI music generation
 - Song remixing capabilities
 
 ## Configuration
 
-### Optional: Gemini API Integration
+### Optional: Explanation assistant integration (planned for a later release)
 
 1. Get API key: https://makersuite.google.com/app/apikey
 
 2. Create `.streamlit/secrets.toml`:
    ```toml
-   GEMINI_API_KEY = "your-api-key-here"
+   # No external explainer API key required in current MVP
    ```
 
 3. Restart Streamlit to use AI explanations
@@ -3613,15 +3602,15 @@ Without API key, the system works with intelligent default explanations.
 ## File Structure
 ```
 Song-training-test/
-├── streamlit_app.py                 # Main Streamlit app
-├── recommendation_engine.py         # Recommendation algorithms
-├── test_recommendations.py         # Engine tests
-├── requirements.txt                # Python dependencies
-├── RECOMMENDATION_GUIDE.md         # Detailed documentation
-├── SETUP_GUIDE.md                 # This file
-└── .streamlit/
-    ├── config.toml                # Streamlit config
-    └── secrets.toml               # API keys (git-ignored)
+â”œâ”€â”€ streamlit_app.py                 # Main Streamlit app
+â”œâ”€â”€ recommendation_engine.py         # Recommendation algorithms
+â”œâ”€â”€ test_recommendations.py         # Engine tests
+â”œâ”€â”€ requirements.txt                # Python dependencies
+â”œâ”€â”€ RECOMMENDATION_GUIDE.md         # Detailed documentation
+â”œâ”€â”€ SETUP_GUIDE.md                 # This file
+â””â”€â”€ .streamlit/
+    â”œâ”€â”€ config.toml                # Streamlit config
+    â””â”€â”€ secrets.toml               # API keys (git-ignored)
 ```
 
 ## Troubleshooting
@@ -3677,16 +3666,11 @@ users = engine.get_all_user_ids()
 songs = engine.get_song_by_name("query")
 ```
 
-### GeminiExplainer
+### Planned Explanation Assistant (Future Release)
 
 ```python
-from recommendation_engine import GeminiExplainer
-
-explainer = GeminiExplainer(api_key="your-key")
-explanation = explainer.generate_explanation(
-    recommendation=rec,
-    user_preferences=prefs
-)
+# Current MVP uses deterministic local explanations.
+# Planned future release: optional external explanation assistant integration.
 ```
 
 ## Advanced Usage
@@ -3734,7 +3718,7 @@ docker run -p 8501:8501 soniqueai
 
 ## Security Notes
 
-⚠️ **Never commit `.streamlit/secrets.toml` to Git!**
+âš ï¸ **Never commit `.streamlit/secrets.toml` to Git!**
 
 Add to `.gitignore`:
 ```
@@ -3757,7 +3741,7 @@ This recommendation system uses:
 - Pandas/NumPy: Data processing
 - Scikit-learn: Machine learning
 - Streamlit: Web interface
-- Google Generative AI: Explanations (optional)
+- future explanation service: Explanations (optional)
 
 ## Version History
 
@@ -3765,7 +3749,10 @@ This recommendation system uses:
   - Collaborative filtering
   - Content-based filtering
   - Hybrid recommendations
-  - Gemini integration
+  - Explanation assistant integration (planned for a later release)
   - Analytics dashboard
+
+
+
 
 
