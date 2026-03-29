@@ -16,6 +16,7 @@ from pathlib import Path
 from collections import Counter
 import re
 import soundfile as sf
+import gc
 
 # -----------------------------
 # PAGE CONFIG
@@ -696,6 +697,20 @@ def get_recommendation_runtime():
     except Exception as exc:
         return None, str(exc)
 
+def clear_generation_runtime_state(clear_cached_model=False):
+    """Drop heavy generation artifacts from session/cache to reduce memory pressure."""
+    for state_key in ("compose_song_bundle", "remix_song_bundle"):
+        if state_key in st.session_state:
+            del st.session_state[state_key]
+
+    if clear_cached_model:
+        try:
+            load_generation_assets.clear()
+        except Exception:
+            pass
+
+    gc.collect()
+
 # Lightweight globals only
 gemini_explainer = load_gemini_explainer()
 feedback_db = initialize_feedback_db()
@@ -832,6 +847,13 @@ page = st.sidebar.radio(
     ]
 )
 
+prev_page = st.session_state.get("_active_page")
+if prev_page != page:
+    # Release heavy generation state when navigating away from the studio page.
+    if prev_page == "Remix / Compose Studio" and page != "Remix / Compose Studio":
+        clear_generation_runtime_state(clear_cached_model=True)
+    st.session_state["_active_page"] = page
+
 # -----------------------------
 # HOME
 # -----------------------------
@@ -860,6 +882,16 @@ elif page == "Remix / Compose Studio":
         "Mode",
         ["Compose (AI Generated)", "Remix Songs"]
     )
+
+    prev_mode = st.session_state.get("_studio_mode")
+    if prev_mode != mode:
+        # Keep only the active mode artifacts to avoid holding multiple compositions at once.
+        if mode == "Compose (AI Generated)":
+            st.session_state.pop("remix_song_bundle", None)
+        else:
+            st.session_state.pop("compose_song_bundle", None)
+        gc.collect()
+        st.session_state["_studio_mode"] = mode
 
     midi_track_map = get_midi_track_map()
     midi_dataset = sorted(midi_track_map.keys())
