@@ -25,10 +25,30 @@ class RecommendationEngine:
         self.song_features_matrix = None
         self.build_matrices()
         
-    def _load_listening_history(self, path, sample_size=100000):
-        """Load listening history with memory optimization"""
+    def _load_listening_history(self, path, sample_size=50000):
+        """Load listening history with memory optimization."""
         print(f"Loading listening history (sampling {sample_size} rows for performance)...")
-        df = pd.read_csv(path, nrows=sample_size)
+
+        required_cols = ['user_id', 'track_id', 'playcount']
+        header = pd.read_csv(path, nrows=0)
+        missing = [col for col in required_cols if col not in header.columns]
+        if missing:
+            raise ValueError(f"Listening history is missing required columns: {missing}")
+
+        dtype_map = {
+            'user_id': 'string',
+            'track_id': 'string',
+            'playcount': 'float32'
+        }
+        df = pd.read_csv(
+            path,
+            usecols=required_cols,
+            nrows=sample_size,
+            dtype=dtype_map
+        )
+
+        df['playcount'] = pd.to_numeric(df['playcount'], errors='coerce').fillna(0).astype('float32')
+        df = df[df['playcount'] > 0]
         return df
     
     def build_matrices(self):
@@ -41,7 +61,7 @@ class RecommendationEngine:
             columns='track_id',
             values='playcount',
             fill_value=0
-        )
+        ).astype(np.float32)
         print(f"User-Item Matrix shape: {self.user_item_matrix.shape}")
         
         # Build song feature matrix from audio features
@@ -59,18 +79,18 @@ class RecommendationEngine:
                 0.0,
                 index=self.user_item_matrix.columns,
                 columns=['fallback_feature']
-            )
+            ).astype(np.float32)
         else:
             # Create feature matrix, aligned with user_item_matrix columns (track_ids).
             feature_data = self.music_df.set_index('track_id')[available_features].fillna(0)
 
             # Use reindex instead of loc so missing track_ids are filled with zeros
             # instead of raising KeyError when listening history has extra tracks.
-            self.song_features_matrix = feature_data.reindex(self.user_item_matrix.columns).fillna(0)
+            self.song_features_matrix = feature_data.reindex(self.user_item_matrix.columns).fillna(0).astype(np.float32)
 
         # Normalize features
         scaler = StandardScaler()
-        self.song_features_normalized = scaler.fit_transform(self.song_features_matrix)
+        self.song_features_normalized = scaler.fit_transform(self.song_features_matrix).astype(np.float32)
         
         print(f"Song Features Matrix shape: {self.song_features_matrix.shape}")
     

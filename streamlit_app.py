@@ -586,7 +586,6 @@ def build_generated_song_bundle(seed_file_1=None, seed_file_2=None, num_notes=MO
 
     return {
         "notes": notes,
-        "audio_wave": audio_wave,
         "wav_bytes": wav_bytes,
         "mp3_bytes": mp3_bytes,
         "mp3_error": mp3_error,
@@ -693,6 +692,8 @@ def initialize_feedback_db():
 def get_recommendation_runtime():
     """Load recommendation engine lazily so app startup remains lightweight."""
     try:
+        # Recommendations and generation do not need to co-reside in memory.
+        clear_generation_runtime_state(clear_cached_model=True)
         return load_recommendation_engine(), None
     except Exception as exc:
         return None, str(exc)
@@ -706,6 +707,13 @@ def clear_generation_runtime_state(clear_cached_model=False):
     if clear_cached_model:
         try:
             load_generation_assets.clear()
+        except Exception:
+            pass
+
+        # TensorFlow can retain memory even after object deletion; clear backend session.
+        try:
+            from tensorflow.keras import backend as K
+            K.clear_session()
         except Exception:
             pass
 
@@ -1257,6 +1265,7 @@ elif page == "Recommendations":
                                 
                                 plt.tight_layout()
                                 st.pyplot(fig)
+                                plt.close(fig)
                             
                             with vis_col2:
                                 st.subheader("🎵 Top Genres")
@@ -1271,6 +1280,7 @@ elif page == "Recommendations":
                                     ax.grid(axis='x', alpha=0.3)
                                     plt.tight_layout()
                                     st.pyplot(fig)
+                                    plt.close(fig)
                                 else:
                                     st.info("No genre information available")
                         
@@ -1396,6 +1406,7 @@ elif page == "Mood & Instrument Analyzer":
             ax.set_title("Mel Spectrogram")
             plt.tight_layout()
             st.pyplot(fig)
+            plt.close(fig)
 
             st.subheader("🧠 Analyzer Inference")
             st.write(f"Detected Mood: {detected_mood}")
